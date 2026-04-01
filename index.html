@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>문장 암기장</title>
+
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📖</text></svg>">
+
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="문장 암기장">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="apple-touch-icon" href="icon.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700;800&display=swap" rel="stylesheet">
+
+<style>
+  body, button, input, textarea {
+    font-family: 'Nanum Gothic', sans-serif;
+  }
+
+  body {
+    background-color: #f4f7f6;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    margin: 0;
+    overflow: hidden;
+  }
+  
+  .top-right {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+  }
+  .top-left {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap; 
+    max-width: 70%;
+  }
+
+  .btn-top {
+    padding: 10px 12px;
+    color: #333;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    transition: transform 0.2s, background-color 0.2s;
+    font-size: 13px;
+  }
+  .btn-top:hover { transform: translateY(-2px); }
+  .btn-master { background-color: #f1c40f; }
+  .btn-all { background-color: #3498db; color: white; }
+  .btn-all:hover { background-color: #2980b9; }
+
+  h1 {
+    color: #333;
+    margin-bottom: 20px;
+    font-size: 28px;
+  }
+  
+  .card-container {
+    perspective: 1000px;
+    width: 360px;
+    height: 420px; /* 세로 길이를 대폭 늘림 */
+    margin-bottom: 15px;
+    transition: all 0.5s ease;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+  }
+  
+  .fly-away {
+    opacity: 0;
+    transform: translateY(-50px) scale(0.9);
+    pointer-events: none;
+  }
+
+  .card {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    transition: transform 0.6s;
+    transform-style: preserve-3d;
+    cursor: pointer;
+  }
+  .card.flipped { transform: rotateY(180deg); }
+  .card-face {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 20px;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    padding: 30px 25px; /* 내부 여백 조정 */
+    box-sizing: border-box;
+    overflow-y: auto;
+  }
+  
+  .card-front {
+    background-color: #ffffff;
+    color: #2c3e50;
+    border: 1px solid #e0e0e0;
+  }
+  
+  .card-back {
+    background-color: #eafaf1; 
+    color: #333333;           
+    transform: rotateY(180deg);
+    border: 1px solid #d1f2eb;
+  }
+  
+  #front-display, #text-display {
+    width: 100%;
+    display: inline-block;
+    white-space: pre-wrap; 
+    word-break: break-word;
+    font-size: 17px; /* 긴 문장을 위해 폰트 크기 축소 */
+    font-weight: bold;
+    line-height: 1.6; /* 줄 간격 넓힘 */
+    text-align: left; /* 긴 글 읽기 편하게 좌측 정렬 */
+  }
+
+  .progress-container {
+    width: 340px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 20px;
+    color: #7f8c8d;
+    font-size: 14px;
+  }
+  .progress-bar-bg {
+    width: 100%;
+    height: 6px;
+    background-color: #e0e0e0;
+    border-radius: 3px;
+    overflow: hidden;
+    margin-top: 8px;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background-color: #2ecc71; 
+    width: 0%;
+    transition: width 0.3s ease;
+  }
+  .controls { display: flex; gap: 10px; margin-bottom: 20px; }
+  .btn-nav {
+    padding: 12px 20px;
+    font-size: 15px;
+    font-weight: bold;
+    border: none;
+    border-radius: 12px;
+    background-color: #34495e;
+    color: white;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  }
+  .btn-nav:hover { background-color: #2c3e50; }
+  
+  .btn-correct { background-color: #27ae60; }
+  .btn-correct:hover { background-color: #219653; }
+
+  .btn-undo { background-color: #e67e22; }
+  .btn-undo:hover { background-color: #d35400; }
+  
+  .btn-nav:disabled, .btn-correct:disabled, .btn-undo:disabled {
+    background-color: #bdc3c7 !important;
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+  }
+
+  .fab-container {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    z-index: 100;
+    display: flex;
+    flex-direction: column-reverse; 
+    align-items: flex-end;
+    gap: 15px;
+    pointer-events: none; 
+  }
+
+  .fab-menu {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 10px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(20px);
+    transition: all 0.3s ease;
+    pointer-events: none;
+  }
+  .fab-menu.open {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+
+  .fab-item {
+    background-color: white;
+    color: #333;
+    border: none;
+    padding: 12px 18px;
+    border-radius: 20px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    font-weight: bold;
+    font-size: 14px;
+    cursor: pointer;
+    transition: transform 0.2s, background-color 0.2s;
+    pointer-events: auto; 
+  }
+  .fab-item:hover {
+    transform: scale(1.05);
+    background-color: #f8f9f9;
+  }
+
+  .fab {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background-color: #e74c3c;
+    color: white;
+    font-size: 32px;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4);
+    transition: transform 0.3s, background-color 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: auto; 
+  }
+  .fab.open {
+    transform: rotate(45deg);
+    background-color: #c0392b;
+  }
+
+  .modal-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: rgba(0,0,0,0.5);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+    pointer-events: auto;
+  }
+  .modal-content {
+    background-color: white;
+    padding: 25px;
+    border-radius: 20px;
+    width: 340px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  }
+  .modal-content h2 { margin: 0; font-size: 20px; color: #333; text-align: center; }
+  .modal-content textarea {
+    padding: 10px; font-size: 15px; border: 1px solid #ddd; border-radius: 8px; outline: none; resize: vertical;
+  }
+  .modal-content textarea:focus { border-color: #2ecc71; }
+  
+  .modal-buttons { display: flex; gap: 10px; margin-top: 5px; }
+  .modal-buttons button { flex: 1; padding: 12px; font-size: 15px; font-weight: bold; border: none; border-radius: 10px; cursor: pointer; }
+  .btn-cancel { background-color: #bdc3c7; color: white; }
+  .btn-submit { background-color: #2ecc71; color: white; }
+  .btn-delete { background-color: #e74c3c; color: white; display: none; }
+  .btn-delete:hover { background-color: #c0392b; }
+
+  .mastered-list { overflow-y: auto; max-height: 300px; margin-top: 10px; }
+  
+  .mastered-item {
+    padding: 12px; background-color: #f9f9f9; border-bottom: 1px solid #eee; border-radius: 6px; margin-bottom: 6px; font-weight: bold; color: #f39c12; display: flex; justify-content: space-between; cursor: pointer; transition: background-color 0.2s;
+  }
+  .mastered-item:hover { background-color: #eef2f5; }
+  
+  #view-modal { z-index: 300; }
+  #form-modal { z-index: 400; }
+  #file-input { display: none; }
+</style>
+</head>
+<body>
+
+<div class="top-left">
+  <button class="btn-top btn-all" onclick="openAllListModal()">📚 전체 목록</button>
+  <input type="file" id="file-input" accept=".json" onchange="handleFileUpload(event)">
+</div>
+
+<div class="top-right">
+  <button class="btn-top btn-master" onclick="openMasteredModal()">🏆 마스터 목록</button>
+</div>
+
+<h1>📖 문장 암기장</h1>
+
+<div class="card-container" id="card-container">
+  <div class="card" id="flashcard">
+    <div class="card-face card-front" id="card-front">
+      <div id="front-display">..</div>
+    </div>
+    <div class="card-face card-back" id="card-back">
+      <div id="text-display">..</div>
+    </div>
+  </div>
+</div>
+
+<div class="progress-container">
+  <div id="progress-text">0 / 0</div>
+  <div class="progress-bar-bg">
+    <div class="progress-bar-fill" id="progress-bar-fill"></div>
+  </div>
+</div>
+
+<div class="controls">
+  <button class="btn-nav" id="btn-prev" onclick="prevCard()">◀ 이전</button>
+  <button class="btn-nav btn-correct" id="btn-correct" onclick="markCorrect()" disabled>✔ 정답 (0/5)</button>
+  <button class="btn-nav" id="btn-next" onclick="nextCard()" disabled>다음 ▶</button>
+</div>
+
+<div class="fab-container">
+  <button class="fab" id="main-fab" onclick="toggleFabMenu()">+</button>
+  <div class="fab-menu" id="fab-menu">
+    <button class="fab-item" onclick="downloadBackup(); toggleFabMenu()">💾 백업</button>
+    <button class="fab-item" onclick="triggerUpload(); toggleFabMenu()">📂 불러오기</button>
+    <button class="fab-item" onclick="openFormModal('add'); toggleFabMenu()">✏️ 문장 추가</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="form-modal">
+  <div class="modal-content">
+    <h2 id="modal-title">새 문장 추가하기</h2>
+    <textarea id="new-name" rows="4" placeholder="문제 (앞면) 예: I am looking forward ___ seeing you."></textarea>
+    <textarea id="new-content" rows="4" placeholder="정답 (뒷면) 예: to"></textarea>
+    
+    <div class="modal-buttons">
+      <button class="btn-cancel" onclick="closeFormModal()">취소</button>
+      <button class="btn-delete" id="modal-delete-btn" onclick="deleteCard()">삭제</button>
+      <button class="btn-submit" id="modal-submit-btn" onclick="submitCard()">추가하기</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="mastered-modal">
+  <div class="modal-content">
+    <h2>🏆 마스터한 문장</h2>
+    <p style="margin:0; font-size:12px; color:#7f8c8d; text-align:center;">덱이 5번 돌면 복습을 위해 다시 등장해!<br>(누르면 내용을 볼 수 있어)</p>
+    <div id="mastered-list" class="mastered-list"></div>
+    <div class="modal-buttons">
+      <button class="btn-cancel" style="width: 100%;" onclick="closeMasteredModal()">닫기</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="all-list-modal">
+  <div class="modal-content">
+    <h2>📚 전체 카드 목록</h2>
+    <p style="margin:0; font-size:12px; color:#7f8c8d; text-align:center;">총 <span id="all-count">0</span>개의 카드가 있어!</p>
+    <div id="all-list" class="mastered-list"></div>
+    <div class="modal-buttons">
+      <button class="btn-cancel" style="width: 100%;" onclick="closeAllListModal()">닫기</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="view-modal">
+  <div class="modal-content" style="align-items: center;">
+    <h2 id="view-name" style="color: #2c3e50; text-align: left; white-space: pre-wrap; word-break: break-word; font-size: 16px; width: 100%; line-height: 1.5;">문제</h2>
+    <hr style="width: 100%; border: 0; border-top: 1px dashed #ccc; margin: 15px 0;">
+    <div id="view-content" style="margin-bottom: 20px; font-size: 16px; color: #333333; text-align: left; white-space: pre-wrap; word-break: break-word; width: 100%; line-height: 1.5;">정답 내용</div>
+    <div class="modal-buttons" style="width: 100%;">
+      <button class="btn-cancel" style="flex: 1;" onclick="closeViewModal()">닫기</button>
+      <button class="btn-submit" style="flex: 1;" onclick="editViewedCard()">편집</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const initialData = [
+    { name: "(  )이란 감리업자를 대표하여 현장에 상주하면서 해당 공사 전반에 관하여 책임 감리 등의 업무를 총괄하는 사람을 말한다.\n\n(  )이란 책임감리원을 보좌하는 사람으로서 담당 감리업무를 책임감리원과 연대하여 책임지는 사람을 한다.\n\n(  )이란 감리업체에 근무하면서 상주감리원의 업무를 기술적•행정적으로 지원하는 사람을 말한다.", content: "1. 책임감리원\n2. 보조감리원\n3. 비상주감리원" },
+    { name: "It's a piece of ___", content: "cake\n(식은 죽 먹기)" },
+    { name: "Procrastination is the thief of ___.", content: "time\n(미루는 버릇은 시간 도둑이다.)" }
+  ];
+
+  let deckCycleCount = 0;
+  let activeCards = [];
+  let masteredCards = [];
+  let shuffledDeck = [];
+  let currentIndex = 0;
+
+  let currentEditTarget = null;
+  let currentViewTarget = null;
+  let currentMode = 'add';
+
+  const cardContainer = document.getElementById('card-container');
+  const card = document.getElementById('flashcard');
+  const frontDisplay = document.getElementById('front-display');
+  const textDisplay = document.getElementById('text-display');
+  const progressText = document.getElementById('progress-text');
+  const progressBarFill = document.getElementById('progress-bar-fill');
+  
+  const btnPrev = document.getElementById('btn-prev');
+  const btnCorrect = document.getElementById('btn-correct');
+  const btnNext = document.getElementById('btn-next');
+
+  function toggleFabMenu() {
+    const menu = document.getElementById('fab-menu');
+    const fab = document.getElementById('main-fab');
+    menu.classList.toggle('open');
+    fab.classList.toggle('open');
+  }
+
+  document.addEventListener('click', (e) => {
+    const container = document.querySelector('.fab-container');
+    const menu = document.getElementById('fab-menu');
+    const fab = document.getElementById('main-fab');
+    if (!container.contains(e.target) && menu.classList.contains('open')) {
+      menu.classList.remove('open');
+      fab.classList.remove('open');
+    }
+  });
+
+  function saveData() {
+    const data = {
+      activeCards: activeCards,
+      masteredCards: masteredCards,
+      deckCycleCount: deckCycleCount,
+      shuffledDeck: shuffledDeck,
+      currentIndex: currentIndex
+    };
+    localStorage.setItem('sentenceApp_data', JSON.stringify(data));
+  }
+
+  function loadSavedData() {
+    const saved = localStorage.getItem('sentenceApp_data');
+    if (saved) {
+      try {
+        const data = JSON.parse(saved);
+        deckCycleCount = data.deckCycleCount || 0;
+        
+        activeCards = data.activeCards.map(f => ({
+          ...f,
+          lastUpdatedCycle: f.lastUpdatedCycle !== undefined ? f.lastUpdatedCycle : deckCycleCount,
+          isCorrectInCurrentCycle: f.isCorrectInCurrentCycle || false
+        }));
+        masteredCards = data.masteredCards || [];
+        
+        if (data.shuffledDeck && data.shuffledDeck.length > 0) {
+          shuffledDeck = data.shuffledDeck.map(savedCard =>
+            activeCards.find(f => f.name === savedCard.name)
+          ).filter(Boolean);
+          
+          currentIndex = data.currentIndex || 0;
+        } else {
+          shuffledDeck = [];
+          currentIndex = 0;
+        }
+      } catch (e) {
+        initDefaultData();
+      }
+    } else {
+      initDefaultData();
+    }
+  }
+
+  function initDefaultData() {
+    activeCards = initialData.map(f => ({ 
+      ...f, correctCount: 0, lastUpdatedCycle: 0, isCorrectInCurrentCycle: false 
+    }));
+    masteredCards = [];
+    deckCycleCount = 0;
+    shuffledDeck = [];
+    currentIndex = 0;
+  }
+
+  function downloadBackup() {
+    const data = { 
+      activeCards: activeCards, 
+      masteredCards: masteredCards, 
+      deckCycleCount: deckCycleCount 
+    };
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data));
+    const downloadAnchorNode = document.createElement('a');
+    downloadAnchorNode.setAttribute("href", dataStr);
+    downloadAnchorNode.setAttribute("download", "sentences_backup.json");
+    document.body.appendChild(downloadAnchorNode);
+    downloadAnchorNode.click();
+    downloadAnchorNode.remove();
+  }
+
+  function triggerUpload() { document.getElementById('file-input').click(); }
+
+  function handleFileUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      try {
+        const data = JSON.parse(e.target.result);
+        if (data.activeCards && Array.isArray(data.masteredCards)) {
+          deckCycleCount = data.deckCycleCount || 0;
+          activeCards = data.activeCards.map(f => ({
+            ...f,
+            lastUpdatedCycle: f.lastUpdatedCycle !== undefined ? f.lastUpdatedCycle : deckCycleCount,
+            isCorrectInCurrentCycle: false
+          }));
+          masteredCards = data.masteredCards;
+          
+          resetDeck(); 
+          updateUI();
+          alert("데이터를 성공적으로 불러왔어!");
+        } else { alert("파일 형식이 맞지 않아!"); }
+      } catch(err) { alert("파일을 읽는 중 오류가 발생했어."); }
+    };
+    reader.readAsText(file);
+    event.target.value = '';
+  }
+
+  let pressTimer;
+  let isLongPress = false;
+  let startX = null;
+  let startY = null;
+
+  cardContainer.addEventListener('mousedown', startPress);
+  cardContainer.addEventListener('touchstart', startPress, {passive: true});
+  
+  cardContainer.addEventListener('mousemove', movePress);
+  cardContainer.addEventListener('touchmove', movePress, {passive: true});
+
+  cardContainer.addEventListener('mouseup', endPress);
+  cardContainer.addEventListener('mouseleave', endPress);
+  cardContainer.addEventListener('touchend', endPress);
+  
+  cardContainer.addEventListener('click', (e) => {
+    if (!isLongPress) flipCard();
+  });
+
+  function startPress(e) {
+    if (shuffledDeck.length === 0) return;
+    isLongPress = false;
+    
+    let clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    let clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    startX = clientX;
+    startY = clientY;
+
+    pressTimer = setTimeout(() => {
+      isLongPress = true;
+      if (navigator.vibrate) navigator.vibrate(50);
+      openFormModal('edit'); 
+    }, 600);
+  }
+
+  function movePress(e) {
+    if (!startX || !startY) return;
+    let clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    let clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    
+    if (Math.abs(clientX - startX) > 10 || Math.abs(clientY - startY) > 10) {
+      clearTimeout(pressTimer);
+    }
+  }
+
+  function endPress(e) { 
+    clearTimeout(pressTimer); 
+    startX = null;
+    startY = null;
+  }
+
+  function shuffle(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+  }
+
+  function resetDeck() {
+    deckCycleCount++;
+    
+    for (let i = masteredCards.length - 1; i >= 0; i--) {
+      let mCard = masteredCards[i];
+      if (deckCycleCount - mCard.masteredAtCycle >= 5) {
+        mCard.correctCount = 4;
+        mCard.lastUpdatedCycle = deckCycleCount;
+        activeCards.push(mCard);
+        masteredCards.splice(i, 1);
+      }
+    }
+    
+    activeCards.forEach(card => {
+      card.isCorrectInCurrentCycle = false;
+      if (card.correctCount >= 3 && (deckCycleCount - card.lastUpdatedCycle >= 5)) {
+        card.correctCount -= 1;
+        card.lastUpdatedCycle = deckCycleCount;
+      }
+    });
+
+    if (activeCards.length === 0 && masteredCards.length > 0) {
+      let minCycles = 5;
+      masteredCards.forEach(f => {
+        let left = 5 - (deckCycleCount - f.masteredAtCycle);
+        if (left < minCycles) minCycles = left;
+      });
+      
+      if (minCycles > 0) {
+        deckCycleCount += (minCycles - 1);
+        alert(`💡 현재 학습할 카드가 없어서 시간을 ${minCycles}턴 앞당겼어!\n다시 복습을 시작해 보자!`);
+        return resetDeck(); 
+      }
+    }
+
+    shuffledDeck = shuffle([...activeCards]);
+    currentIndex = 0;
+    saveData();
+  }
+
+  function updateUI(keepFlipped = false) {
+    if (!keepFlipped) {
+      card.classList.remove('flipped');
+      btnCorrect.disabled = true;
+      btnNext.disabled = true;
+    }
+    
+    setTimeout(() => {
+      if (shuffledDeck.length === 0) {
+        if(activeCards.length === 0 && masteredCards.length === 0) {
+          frontDisplay.innerText = "텅~ 비었어!";
+          textDisplay.innerText = "새로운 문장을 추가해 봐!";
+        } else {
+          frontDisplay.innerText = "🏆 완벽해!";
+          textDisplay.innerText = "모든 문장을 마스터했어!";
+        }
+        
+        progressText.textContent = "0 / 0";
+        progressBarFill.style.width = "100%";
+        btnCorrect.textContent = "✔ 정답 (0/5)";
+        
+        btnPrev.disabled = true;
+        btnCorrect.disabled = true;
+        btnNext.disabled = true;
+        return;
+      }
+
+      const currentCard = shuffledDeck[currentIndex];
+      frontDisplay.innerText = currentCard.name;
+      textDisplay.innerText = currentCard.content;
+      
+      if (currentCard.isCorrectInCurrentCycle) {
+        btnCorrect.textContent = `❌ 정답 취소 (${currentCard.correctCount}/5)`;
+        btnCorrect.classList.add('btn-undo');
+        btnCorrect.classList.remove('btn-correct');
+      } else {
+        btnCorrect.textContent = `✔ 정답 (${currentCard.correctCount}/5)`;
+        btnCorrect.classList.add('btn-correct');
+        btnCorrect.classList.remove('btn-undo');
+      }
+      
+      const total = shuffledDeck.length;
+      const currentNum = currentIndex + 1;
+      progressText.textContent = `${currentNum} / ${total}`;
+      
+      const progressPercent = (currentNum / total) * 100;
+      progressBarFill.style.width = `${progressPercent}%`;
+
+      btnPrev.disabled = (currentIndex === 0);
+
+      if (keepFlipped) {
+        btnCorrect.disabled = false;
+        btnNext.disabled = false;
+      }
+
+    }, 150);
+  }
+
+  function flipCard() {
+    card.classList.toggle('flipped');
+    if (card.classList.contains('flipped')) {
+      btnCorrect.disabled = false;
+      btnNext.disabled = false;
+    } else {
+      btnCorrect.disabled = true;
+      btnNext.disabled = true;
+    }
+  }
+
+  function markCorrect() {
+    if (shuffledDeck.length === 0) return;
+    
+    let currentCard = shuffledDeck[currentIndex];
+
+    if (currentCard.isCorrectInCurrentCycle) {
+      currentCard.correctCount -= 1;
+      currentCard.isCorrectInCurrentCycle = false;
+      saveData();
+      updateUI(true); 
+    } 
+    else {
+      currentCard.correctCount += 1;
+      currentCard.lastUpdatedCycle = deckCycleCount;
+      currentCard.isCorrectInCurrentCycle = true;
+
+      if (currentCard.correctCount >= 5) {
+        cardContainer.classList.add('fly-away');
+        currentCard.masteredAtCycle = deckCycleCount;
+        
+        setTimeout(() => {
+          cardContainer.classList.remove('fly-away');
+          activeCards = activeCards.filter(c => c !== currentCard);
+          masteredCards.push(currentCard);
+          shuffledDeck.splice(currentIndex, 1);
+          
+          if (shuffledDeck.length === 0) {
+            resetDeck();
+          } else if (currentIndex >= shuffledDeck.length) {
+            resetDeck(); 
+          }
+          
+          saveData();
+          updateUI(); 
+        }, 500);
+
+      } else {
+        currentIndex++;
+        if (currentIndex >= shuffledDeck.length) { resetDeck(); }
+        saveData();
+        updateUI(); 
+      }
+    }
+  }
+
+  function prevCard() {
+    if (shuffledDeck.length === 0 || currentIndex === 0) return;
+    currentIndex--;
+    saveData();
+    updateUI();
+  }
+
+  function nextCard() {
+    if (shuffledDeck.length === 0) return;
+    if (currentIndex === shuffledDeck.length - 1) {
+      resetDeck();
+    } else {
+      currentIndex++;
+      saveData(); 
+    }
+    updateUI();
+  }
+
+  function openFormModal(mode, target = null) {
+    currentMode = mode;
+    currentEditTarget = target || (shuffledDeck.length > 0 ? shuffledDeck[currentIndex] : null);
+
+    const modalTitle = document.getElementById('modal-title');
+    const submitBtn = document.getElementById('modal-submit-btn');
+    const deleteBtn = document.getElementById('modal-delete-btn');
+    const nameInput = document.getElementById('new-name');
+    const contentInput = document.getElementById('new-content');
+
+    if (mode === 'edit' && currentEditTarget) {
+      modalTitle.textContent = "✏️ 문장 편집하기";
+      submitBtn.textContent = "저장하기";
+      deleteBtn.style.display = 'block';
+      nameInput.value = currentEditTarget.name;
+      contentInput.value = currentEditTarget.content;
+    } else {
+      modalTitle.textContent = "새 문장 추가하기";
+      submitBtn.textContent = "추가하기";
+      deleteBtn.style.display = 'none';
+      nameInput.value = "";
+      contentInput.value = "";
+    }
+    
+    document.getElementById('form-modal').style.display = 'flex';
+  }
+
+  function closeFormModal() {
+    document.getElementById('form-modal').style.display = 'none';
+  }
+
+  function submitCard() {
+    const name = document.getElementById('new-name').value.trim();
+    const content = document.getElementById('new-content').value.trim();
+
+    if (name === "" || content === "") {
+      alert("문제와 정답을 모두 입력해 줘!");
+      return;
+    }
+
+    if (currentMode === 'edit' && currentEditTarget) {
+      currentEditTarget.name = name;
+      currentEditTarget.content = content;
+    } else {
+      const newCard = { name: name, content: content, correctCount: 0, lastUpdatedCycle: deckCycleCount, isCorrectInCurrentCycle: false };
+      activeCards.push(newCard);
+      if (shuffledDeck.length === 0) {
+        resetDeck();
+      } else {
+        shuffledDeck.push(newCard);
+      }
+    }
+    saveData();
+    closeFormModal();
+    updateUI();
+
+    if (document.getElementById('all-list-modal').style.display === 'flex') openAllListModal();
+    if (document.getElementById('mastered-modal').style.display === 'flex') openMasteredModal();
+
+    if (document.getElementById('view-modal').style.display === 'flex') {
+      viewAnyCard(currentEditTarget);
+    }
+  }
+
+  function deleteCard() {
+    if (!confirm("정말 이 카드를 삭제할까? 한 번 지우면 복구할 수 없어!")) {
+      return;
+    }
+
+    if (currentEditTarget) {
+      activeCards = activeCards.filter(c => c !== currentEditTarget);
+      masteredCards = masteredCards.filter(c => c !== currentEditTarget);
+      
+      const deckIdx = shuffledDeck.indexOf(currentEditTarget);
+      if (deckIdx > -1) {
+        shuffledDeck.splice(deckIdx, 1);
+        if (deckIdx === currentIndex) {
+          if (currentIndex >= shuffledDeck.length) { 
+            resetDeck();
+          }
+        } else if (deckIdx < currentIndex) {
+          currentIndex--;
+        }
+      }
+    }
+    
+    if (shuffledDeck.length === 0 && activeCards.length > 0) {
+      resetDeck();
+    }
+    
+    saveData();
+    closeFormModal();
+    updateUI();
+
+    if (document.getElementById('all-list-modal').style.display === 'flex') openAllListModal();
+    if (document.getElementById('mastered-modal').style.display === 'flex') openMasteredModal();
+
+    closeViewModal();
+  }
+
+  function openMasteredModal() {
+    const listContainer = document.getElementById('mastered-list');
+    listContainer.innerHTML = '';
+    
+    if (masteredCards.length === 0) {
+      listContainer.innerHTML = '<p style="text-align:center; color:#7f8c8d; margin-top:20px;">아직 마스터한 문장이 없어.<br>5번 맞추면 여기에 추가될 거야!</p>';
+    } else {
+      const sortedMastered = [...masteredCards].sort((a, b) => a.name.localeCompare(b.name));
+      sortedMastered.forEach((f) => {
+        const item = document.createElement('div');
+        item.className = 'mastered-item';
+        item.onclick = () => viewAnyCard(f);
+        
+        const cyclesLeft = 5 - (deckCycleCount - f.masteredAtCycle);
+        item.innerHTML = `<span>${f.name.substring(0, 15)}...</span> <span style="font-size:12px; font-weight:normal;">복습까지 ${cyclesLeft}턴 남음 ⭐</span>`;
+        listContainer.appendChild(item);
+      });
+    }
+    document.getElementById('mastered-modal').style.display = 'flex';
+  }
+  
+  function closeMasteredModal() {
+    document.getElementById('mastered-modal').style.display = 'none';
+  }
+
+  function openAllListModal() {
+    const listContainer = document.getElementById('all-list');
+    listContainer.innerHTML = '';
+    
+    const allCards = [...activeCards, ...masteredCards];
+    allCards.sort((a, b) => a.name.localeCompare(b.name));
+    
+    document.getElementById('all-count').textContent = allCards.length;
+    
+    if (allCards.length === 0) {
+      listContainer.innerHTML = '<p style="text-align:center; color:#7f8c8d; margin-top:20px;">등록된 카드가 하나도 없어!</p>';
+    } else {
+      allCards.forEach(f => {
+        const item = document.createElement('div');
+        item.className = 'mastered-item';
+        item.onclick = () => viewAnyCard(f);
+        
+        let statusText = masteredCards.includes(f) ? "🏆 마스터" : `💪 학습중 (${f.correctCount}/5)`;
+        
+        item.innerHTML = `<span>${f.name.substring(0, 15)}...</span> <span style="font-size:12px; font-weight:normal; color:#7f8c8d;">${statusText}</span>`;
+        listContainer.appendChild(item);
+      });
+    }
+    document.getElementById('all-list-modal').style.display = 'flex';
+  }
+
+  function closeAllListModal() {
+    document.getElementById('all-list-modal').style.display = 'none';
+  }
+
+  function viewAnyCard(cardObj) {
+    currentViewTarget = cardObj;
+    document.getElementById('view-name').innerText = cardObj.name;
+    const viewContent = document.getElementById('view-content');
+    
+    viewContent.innerText = cardObj.content;
+    document.getElementById('view-modal').style.display = 'flex';
+  }
+  
+  function closeViewModal() {
+    document.getElementById('view-modal').style.display = 'none';
+  }
+
+  function editViewedCard() {
+    openFormModal('edit', currentViewTarget);
+  }
+
+  loadSavedData();
+  
+  if (shuffledDeck.length === 0) {
+    resetDeck();
+  }
+  
+  updateUI();
+</script>
+</body>
+</html>
