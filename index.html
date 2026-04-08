@@ -107,6 +107,7 @@
     width: 100%;
     height: 100%;
     backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -151,7 +152,7 @@
     font-size: 24px;
     cursor: pointer;
     z-index: 10;
-    transition: transform 0.2s;
+    transition: transform 0.2s, opacity 0.2s;
     padding: 5px;
   }
   .btn-hint:hover {
@@ -182,6 +183,14 @@
     opacity: 1;
     visibility: visible;
     transform: translateY(0);
+  }
+
+  /* 핵심 수정 사항: 카드가 뒤집혔을 때 힌트 요소 숨기기 (비침 방지) */
+  .card.flipped .btn-hint,
+  .card.flipped .hint-toast {
+    opacity: 0 !important;
+    pointer-events: none;
+    visibility: hidden !important;
   }
 
   .progress-container {
@@ -624,7 +633,6 @@
   cardContainer.addEventListener('touchend', endPress);
   
   cardContainer.addEventListener('click', (e) => {
-    // 힌트 버튼을 눌렀을 때는 카드가 뒤집히지 않게 하기 위해
     if (e.target.id === 'btn-hint') return;
     if (!isLongPress) flipCard();
   });
@@ -680,7 +688,7 @@
   }
 
   function showHint(event) {
-    event.stopPropagation(); // 카드 뒤집기 방지
+    event.stopPropagation(); 
     const hintToast = document.getElementById('hint-toast');
     const currentCard = shuffledDeck[currentIndex];
     
@@ -745,7 +753,7 @@
   }
 
   function updateUI(keepFlipped = false) {
-    document.getElementById('hint-toast').classList.remove('show'); // 토스트 닫기
+    document.getElementById('hint-toast').classList.remove('show'); 
 
     if (!keepFlipped) {
       card.classList.remove('flipped');
@@ -844,6 +852,9 @@
   }
 
   function flipCard() {
+    // 핵심 수정 사항: 카드를 뒤집을 때 무조건 힌트 말풍선 닫기
+    document.getElementById('hint-toast').classList.remove('show'); 
+    
     card.classList.toggle('flipped');
     if (card.classList.contains('flipped')) {
       if (shuffledDeck.length > 0 && !shuffledDeck[currentIndex].isHidden) {
