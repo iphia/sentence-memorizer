@@ -81,7 +81,6 @@
     -webkit-touch-callout: none;
   }
   
-  /* 숨김 처리 시 나타나는 애니메이션 클래스 */
   .card-hidden-anim {
     opacity: 0.35 !important;
     transform: scale(0.85) !important;
@@ -140,6 +139,49 @@
     font-weight: bold;
     line-height: 1.6; 
     text-align: left; 
+  }
+
+  /* 힌트 버튼 스타일 */
+  .btn-hint {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    z-index: 10;
+    transition: transform 0.2s;
+    padding: 5px;
+  }
+  .btn-hint:hover {
+    transform: scale(1.2);
+  }
+
+  /* 힌트 토스트 메시지 스타일 */
+  .hint-toast {
+    position: absolute;
+    bottom: 60px;
+    left: 20px;
+    background: rgba(44, 62, 80, 0.9);
+    color: white;
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-size: 14px;
+    z-index: 11;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(10px);
+    transition: all 0.3s ease;
+    max-width: 70%;
+    word-break: break-word;
+    text-align: left;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  }
+  .hint-toast.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
   }
 
   .progress-container {
@@ -331,6 +373,8 @@
   <div class="card" id="flashcard">
     <div class="card-face card-front" id="card-front">
       <div id="front-display">..</div>
+      <button class="btn-hint" id="btn-hint" onclick="showHint(event)" style="display: none;">💡</button>
+      <div class="hint-toast" id="hint-toast"></div>
     </div>
     <div class="card-face card-back" id="card-back">
       <div id="text-display">..</div>
@@ -364,8 +408,9 @@
 <div class="modal-overlay" id="form-modal">
   <div class="modal-content">
     <h2 id="modal-title">새 문장 추가하기</h2>
-    <textarea id="new-name" rows="4" placeholder="문제 (앞면) 예: I am looking forward ___ seeing you."></textarea>
-    <textarea id="new-content" rows="4" placeholder="정답 (뒷면) 예: to"></textarea>
+    <textarea id="new-name" rows="3" placeholder="문제 (앞면) 예: I am looking forward ___ seeing you."></textarea>
+    <textarea id="new-hint" rows="2" placeholder="힌트 (선택사항) 예: 전치사를 생각해봐"></textarea>
+    <textarea id="new-content" rows="3" placeholder="정답 (뒷면) 예: to"></textarea>
     
     <div style="display: flex; align-items: center; gap: 8px; margin-top: 5px;">
       <input type="checkbox" id="new-hidden" style="width: auto; cursor: pointer;">
@@ -405,6 +450,7 @@
 <div class="modal-overlay" id="view-modal">
   <div class="modal-content" style="align-items: center;">
     <h2 id="view-name" style="color: #2c3e50; text-align: left; white-space: pre-wrap; word-break: break-word; font-size: 16px; width: 100%; line-height: 1.5;">문제</h2>
+    <div id="view-hint" style="color: #e67e22; font-size: 14px; font-weight: bold; width: 100%; text-align: left; display: none;">💡 힌트: </div>
     <hr style="width: 100%; border: 0; border-top: 1px dashed #ccc; margin: 15px 0;">
     <div id="view-content" style="margin-bottom: 20px; font-size: 16px; color: #333333; text-align: left; white-space: pre-wrap; word-break: break-word; width: 100%; line-height: 1.5;">정답 내용</div>
     <div class="modal-buttons" style="width: 100%;">
@@ -417,9 +463,9 @@
 
 <script>
   const initialData = [
-    { name: "(  )이란 감리업자를 대표하여 현장에 상주하면서 해당 공사 전반에 관하여 책임 감리 등의 업무를 총괄하는 사람을 말한다.\n\n(  )이란 책임감리원을 보좌하는 사람으로서 담당 감리업무를 책임감리원과 연대하여 책임지는 사람을 한다.\n\n(  )이란 감리업체에 근무하면서 상주감리원의 업무를 기술적•행정적으로 지원하는 사람을 말한다.", content: "1. 책임감리원\n2. 보조감리원\n3. 비상주감리원", isHidden: false },
-    { name: "It's a piece of ___", content: "cake\n(식은 죽 먹기)", isHidden: false },
-    { name: "Procrastination is the thief of ___.", content: "time\n(미루는 버릇은 시간 도둑이다.)", isHidden: false }
+    { name: "(  )이란 감리업자를 대표하여 현장에 상주하면서 해당 공사 전반에 관하여 책임 감리 등의 업무를 총괄하는 사람을 말한다.\n\n(  )이란 책임감리원을 보좌하는 사람으로서 담당 감리업무를 책임감리원과 연대하여 책임지는 사람을 한다.\n\n(  )이란 감리업체에 근무하면서 상주감리원의 업무를 기술적•행정적으로 지원하는 사람을 말한다.", content: "1. 책임감리원\n2. 보조감리원\n3. 비상주감리원", hint: "감리원 3가지 종류를 순서대로!", isHidden: false },
+    { name: "It's a piece of ___", content: "cake\n(식은 죽 먹기)", hint: "달콤한 디저트", isHidden: false },
+    { name: "Procrastination is the thief of ___.", content: "time\n(미루는 버릇은 시간 도둑이다.)", hint: "금보다 소중한 것", isHidden: false }
   ];
 
   let deckCycleCount = 0;
@@ -431,6 +477,7 @@
   let currentEditTarget = null;
   let currentViewTarget = null;
   let currentMode = 'add';
+  let hintTimer = null; // 힌트 토스트 타이머
 
   const cardContainer = document.getElementById('card-container');
   const card = document.getElementById('flashcard');
@@ -481,11 +528,12 @@
         
         activeCards = data.activeCards.map(f => ({
           ...f,
+          hint: f.hint || "",
           lastUpdatedCycle: f.lastUpdatedCycle !== undefined ? f.lastUpdatedCycle : deckCycleCount,
           isCorrectInCurrentCycle: f.isCorrectInCurrentCycle || false,
           isHidden: f.isHidden || false 
         }));
-        masteredCards = data.masteredCards.map(f => ({ ...f, isHidden: f.isHidden || false })) || [];
+        masteredCards = data.masteredCards.map(f => ({ ...f, hint: f.hint || "", isHidden: f.isHidden || false })) || [];
         
         if (data.shuffledDeck && data.shuffledDeck.length > 0) {
           shuffledDeck = data.shuffledDeck.map(savedCard =>
@@ -507,7 +555,7 @@
 
   function initDefaultData() {
     activeCards = initialData.map(f => ({ 
-      ...f, correctCount: 0, lastUpdatedCycle: 0, isCorrectInCurrentCycle: false, isHidden: false
+      ...f, hint: f.hint || "", correctCount: 0, lastUpdatedCycle: 0, isCorrectInCurrentCycle: false, isHidden: false
     }));
     masteredCards = [];
     deckCycleCount = 0;
@@ -543,11 +591,12 @@
           deckCycleCount = data.deckCycleCount || 0;
           activeCards = data.activeCards.map(f => ({
             ...f,
+            hint: f.hint || "",
             lastUpdatedCycle: f.lastUpdatedCycle !== undefined ? f.lastUpdatedCycle : deckCycleCount,
             isCorrectInCurrentCycle: false,
             isHidden: f.isHidden || false
           }));
-          masteredCards = data.masteredCards.map(f => ({ ...f, isHidden: f.isHidden || false }));
+          masteredCards = data.masteredCards.map(f => ({ ...f, hint: f.hint || "", isHidden: f.isHidden || false }));
           
           resetDeck(); 
           updateUI();
@@ -575,10 +624,13 @@
   cardContainer.addEventListener('touchend', endPress);
   
   cardContainer.addEventListener('click', (e) => {
+    // 힌트 버튼을 눌렀을 때는 카드가 뒤집히지 않게 하기 위해
+    if (e.target.id === 'btn-hint') return;
     if (!isLongPress) flipCard();
   });
 
   function startPress(e) {
+    if (e.target.id === 'btn-hint') return;
     if (shuffledDeck.length === 0) return;
     isLongPress = false;
     
@@ -627,10 +679,31 @@
     updateUI(card.classList.contains('flipped'));
   }
 
+  function showHint(event) {
+    event.stopPropagation(); // 카드 뒤집기 방지
+    const hintToast = document.getElementById('hint-toast');
+    const currentCard = shuffledDeck[currentIndex];
+    
+    if(hintToast.classList.contains('show')) {
+        hintToast.classList.remove('show');
+        clearTimeout(hintTimer);
+        return;
+    }
+
+    if (currentCard && currentCard.hint) {
+      hintToast.innerText = "💡 " + currentCard.hint;
+      hintToast.classList.add('show');
+      
+      clearTimeout(hintTimer);
+      hintTimer = setTimeout(() => {
+        hintToast.classList.remove('show');
+      }, 3000);
+    }
+  }
+
   function resetDeck() {
     deckCycleCount++;
     
-    // 숨겨지지 않은 마스터 카드만 복귀 검사
     for (let i = masteredCards.length - 1; i >= 0; i--) {
       let mCard = masteredCards[i];
       if (!mCard.isHidden && (deckCycleCount - mCard.masteredAtCycle >= 5)) {
@@ -641,7 +714,6 @@
       }
     }
     
-    // 숨겨지지 않은 활성 카드만 점수 깎기
     activeCards.forEach(card => {
       card.isCorrectInCurrentCycle = false;
       if (!card.isHidden && card.correctCount >= 3 && (deckCycleCount - card.lastUpdatedCycle >= 5)) {
@@ -673,6 +745,8 @@
   }
 
   function updateUI(keepFlipped = false) {
+    document.getElementById('hint-toast').classList.remove('show'); // 토스트 닫기
+
     if (!keepFlipped) {
       card.classList.remove('flipped');
       btnCorrect.disabled = true;
@@ -680,6 +754,8 @@
     }
     
     setTimeout(() => {
+      const btnHint = document.getElementById('btn-hint');
+
       if (shuffledDeck.length === 0) {
         let totalHidden = activeCards.filter(c => c.isHidden).length + masteredCards.filter(c => c.isHidden).length;
         let totalCards = activeCards.length + masteredCards.length;
@@ -704,6 +780,7 @@
         btnHide.style.borderColor = "transparent";
         btnCorrect.disabled = true;
         btnNext.disabled = true;
+        btnHint.style.display = 'none';
         cardContainer.classList.remove('card-hidden-anim');
         return;
       }
@@ -713,14 +790,19 @@
       frontDisplay.innerText = currentCard.name;
       textDisplay.innerText = currentCard.content;
 
-      // 애니메이션 및 버튼 토글 처리
+      if (currentCard.hint && currentCard.hint.trim() !== "") {
+          btnHint.style.display = 'block';
+      } else {
+          btnHint.style.display = 'none';
+      }
+
       if (currentCard.isHidden) {
         cardContainer.classList.add('card-hidden-anim');
         btnHide.textContent = "👀 취소";
         btnHide.style.color = "#e74c3c";
         btnHide.style.borderColor = "#e74c3c";
         btnHide.style.backgroundColor = "#fdf2f1";
-        btnCorrect.disabled = true; // 숨김 상태일 때는 정답 체크 불가
+        btnCorrect.disabled = true; 
       } else {
         cardContainer.classList.remove('card-hidden-anim');
         btnHide.textContent = "🫥 숨김";
@@ -755,7 +837,6 @@
       if (keepFlipped && !currentCard.isHidden) {
         btnNext.disabled = false;
       } else if (currentCard.isHidden) {
-        // 숨긴 상태면 언제든지 다음 버튼 활성화
         btnNext.disabled = false;
       }
 
@@ -849,6 +930,7 @@
     const submitBtn = document.getElementById('modal-submit-btn');
     const deleteBtn = document.getElementById('modal-delete-btn');
     const nameInput = document.getElementById('new-name');
+    const hintInput = document.getElementById('new-hint');
     const contentInput = document.getElementById('new-content');
     const hiddenCheckbox = document.getElementById('new-hidden');
 
@@ -857,6 +939,7 @@
       submitBtn.textContent = "저장하기";
       deleteBtn.style.display = 'block';
       nameInput.value = currentEditTarget.name;
+      hintInput.value = currentEditTarget.hint || "";
       contentInput.value = currentEditTarget.content;
       hiddenCheckbox.checked = currentEditTarget.isHidden || false;
     } else {
@@ -864,6 +947,7 @@
       submitBtn.textContent = "추가하기";
       deleteBtn.style.display = 'none';
       nameInput.value = "";
+      hintInput.value = "";
       contentInput.value = "";
       hiddenCheckbox.checked = false;
     }
@@ -877,6 +961,7 @@
 
   function submitCard() {
     const name = document.getElementById('new-name').value.trim();
+    const hint = document.getElementById('new-hint').value.trim();
     const content = document.getElementById('new-content').value.trim();
     const isHidden = document.getElementById('new-hidden').checked;
 
@@ -887,10 +972,10 @@
 
     if (currentMode === 'edit' && currentEditTarget) {
       currentEditTarget.name = name;
+      currentEditTarget.hint = hint;
       currentEditTarget.content = content;
       currentEditTarget.isHidden = isHidden;
       
-      // 만약 덱에 있는 카드였는데 편집에서 숨기기 체크했다면 바로 빼주기
       if (isHidden) {
         const idx = shuffledDeck.indexOf(currentEditTarget);
         if (idx > -1) {
@@ -900,7 +985,7 @@
         }
       }
     } else {
-      const newCard = { name: name, content: content, correctCount: 0, lastUpdatedCycle: deckCycleCount, isCorrectInCurrentCycle: false, isHidden: isHidden };
+      const newCard = { name: name, content: content, hint: hint, correctCount: 0, lastUpdatedCycle: deckCycleCount, isCorrectInCurrentCycle: false, isHidden: isHidden };
       activeCards.push(newCard);
       if (!isHidden) {
         if (shuffledDeck.length === 0) resetDeck();
@@ -1020,6 +1105,14 @@
     document.getElementById('view-name').innerText = cardObj.name;
     document.getElementById('view-content').innerText = cardObj.content;
     
+    const viewHint = document.getElementById('view-hint');
+    if (cardObj.hint && cardObj.hint.trim() !== "") {
+      viewHint.innerText = "💡 힌트: " + cardObj.hint;
+      viewHint.style.display = 'block';
+    } else {
+      viewHint.style.display = 'none';
+    }
+    
     const viewHideBtn = document.getElementById('view-btn-hide');
     if (cardObj.isHidden) {
       viewHideBtn.textContent = "👀 숨김 해제";
@@ -1041,7 +1134,6 @@
     currentViewTarget.isHidden = !currentViewTarget.isHidden;
     saveData();
     
-    // 버튼 UI 업데이트
     const viewHideBtn = document.getElementById('view-btn-hide');
     if (currentViewTarget.isHidden) {
       viewHideBtn.textContent = "👀 숨김 해제";
@@ -1049,7 +1141,6 @@
       viewHideBtn.style.borderColor = "#e74c3c";
       viewHideBtn.style.backgroundColor = "#fdf2f1";
       
-      // 숨김 처리 됐을 때 혹시 현재 덱에 있는 카드라면 덱에서 빼주기
       const idx = shuffledDeck.indexOf(currentViewTarget);
       if (idx > -1) {
           shuffledDeck.splice(idx, 1);
@@ -1062,11 +1153,9 @@
       viewHideBtn.style.backgroundColor = "white";
     }
 
-    // 텅 빈 상태에서 살려냈을 경우 덱 재설정
     if (shuffledDeck.length === 0 && !currentViewTarget.isHidden) {
        resetDeck();
     } else {
-       // 백그라운드의 현재 카드 상태 업데이트
        if (shuffledDeck.length > 0 && shuffledDeck[currentIndex] === currentViewTarget) {
          updateUI(card.classList.contains('flipped'));
        } else {
@@ -1074,7 +1163,6 @@
        }
     }
 
-    // 뒷단 리스트 최신화
     if (document.getElementById('all-list-modal').style.display === 'flex') openAllListModal();
     if (document.getElementById('mastered-modal').style.display === 'flex') openMasteredModal();
   }
