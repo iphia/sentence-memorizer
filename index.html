@@ -142,7 +142,6 @@
     text-align: left; 
   }
 
-  /* 힌트 버튼 스타일 */
   .btn-hint {
     position: absolute;
     bottom: 20px;
@@ -155,11 +154,8 @@
     transition: transform 0.2s, opacity 0.2s;
     padding: 5px;
   }
-  .btn-hint:hover {
-    transform: scale(1.2);
-  }
+  .btn-hint:hover { transform: scale(1.2); }
 
-  /* 힌트 토스트 메시지 스타일 */
   .hint-toast {
     position: absolute;
     bottom: 60px;
@@ -179,173 +175,55 @@
     text-align: left;
     box-shadow: 0 4px 10px rgba(0,0,0,0.2);
   }
-  .hint-toast.show {
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(0);
-  }
+  .hint-toast.show { opacity: 1; visibility: visible; transform: translateY(0); }
 
-  /* 핵심 수정 사항: 카드가 뒤집혔을 때 힌트 요소 숨기기 (비침 방지) */
   .card.flipped .btn-hint,
   .card.flipped .hint-toast {
-    opacity: 0 !important;
-    pointer-events: none;
-    visibility: hidden !important;
+    opacity: 0 !important; pointer-events: none; visibility: hidden !important;
   }
 
   .progress-container {
-    width: 340px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-bottom: 20px;
-    color: #7f8c8d;
-    font-size: 14px;
+    width: 340px; display: flex; flex-direction: column; align-items: center; margin-bottom: 20px; color: #7f8c8d; font-size: 14px;
   }
-  .progress-bar-bg {
-    width: 100%;
-    height: 6px;
-    background-color: #e0e0e0;
-    border-radius: 3px;
-    overflow: hidden;
-    margin-top: 8px;
-  }
-  .progress-bar-fill {
-    height: 100%;
-    background-color: #2ecc71; 
-    width: 0%;
-    transition: width 0.3s ease;
-  }
+  .progress-bar-bg { width: 100%; height: 6px; background-color: #e0e0e0; border-radius: 3px; overflow: hidden; margin-top: 8px; }
+  .progress-bar-fill { height: 100%; background-color: #2ecc71; width: 0%; transition: width 0.3s ease; }
+  
   .controls { display: flex; gap: 8px; margin-bottom: 20px; align-items: stretch; }
   .btn-nav {
-    padding: 12px 18px;
-    font-size: 15px;
-    font-weight: bold;
-    border: none;
-    border-radius: 12px;
-    background-color: #34495e;
-    color: white;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    padding: 12px 18px; font-size: 15px; font-weight: bold; border: none; border-radius: 12px; background-color: #34495e; color: white; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
   }
   .btn-nav:hover { background-color: #2c3e50; }
-  
   .btn-correct { background-color: #27ae60; flex: 1; }
   .btn-correct:hover { background-color: #219653; }
-
   .btn-undo { background-color: #e67e22; }
   .btn-undo:hover { background-color: #d35400; }
   
   .btn-hide-action {
     background: white; border: 2px solid #bdc3c7; border-radius: 12px; font-size: 15px; cursor: pointer; padding: 0 12px; color: #7f8c8d; font-weight: bold; transition: all 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.05);
   }
-
   .btn-nav:disabled, .btn-correct:disabled, .btn-undo:disabled, .btn-hide-action:disabled {
-    background-color: #bdc3c7 !important;
-    color: white !important;
-    cursor: not-allowed;
-    box-shadow: none;
-    transform: none;
-    border-color: transparent !important;
+    background-color: #bdc3c7 !important; color: white !important; cursor: not-allowed; box-shadow: none; transform: none; border-color: transparent !important;
   }
 
-  .fab-container {
-    position: fixed;
-    bottom: 30px;
-    right: 30px;
-    z-index: 100;
-    display: flex;
-    flex-direction: column-reverse; 
-    align-items: flex-end;
-    gap: 15px;
-    pointer-events: none; 
-  }
+  .fab-container { position: fixed; bottom: 30px; right: 30px; z-index: 100; display: flex; flex-direction: column-reverse; align-items: flex-end; gap: 15px; pointer-events: none; }
+  .fab-menu { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; opacity: 0; visibility: hidden; transform: translateY(20px); transition: all 0.3s ease; pointer-events: none; }
+  .fab-menu.open { opacity: 1; visibility: visible; transform: translateY(0); pointer-events: auto; }
+  .fab-item { background-color: white; color: #333; border: none; padding: 12px 18px; border-radius: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.15); font-weight: bold; font-size: 14px; cursor: pointer; transition: transform 0.2s, background-color 0.2s; pointer-events: auto; }
+  .fab-item:hover { transform: scale(1.05); background-color: #f8f9f9; }
+  .fab { width: 60px; height: 60px; border-radius: 50%; background-color: #e74c3c; color: white; font-size: 32px; border: none; cursor: pointer; box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4); transition: transform 0.3s, background-color 0.3s; display: flex; align-items: center; justify-content: center; pointer-events: auto; }
+  .fab.open { transform: rotate(45deg); background-color: #c0392b; }
 
-  .fab-menu {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 10px;
-    opacity: 0;
-    visibility: hidden;
-    transform: translateY(20px);
-    transition: all 0.3s ease;
-    pointer-events: none;
-  }
-  .fab-menu.open {
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(0);
-    pointer-events: auto;
-  }
-
-  .fab-item {
-    background-color: white;
-    color: #333;
-    border: none;
-    padding: 12px 18px;
-    border-radius: 20px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-    font-weight: bold;
-    font-size: 14px;
-    cursor: pointer;
-    transition: transform 0.2s, background-color 0.2s;
-    pointer-events: auto; 
-  }
-  .fab-item:hover {
-    transform: scale(1.05);
-    background-color: #f8f9f9;
-  }
-
-  .fab {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    background-color: #e74c3c;
-    color: white;
-    font-size: 32px;
-    border: none;
-    cursor: pointer;
-    box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4);
-    transition: transform 0.3s, background-color 0.3s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    pointer-events: auto; 
-  }
-  .fab.open {
-    transform: rotate(45deg);
-    background-color: #c0392b;
-  }
-
-  .modal-overlay {
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background-color: rgba(0,0,0,0.5);
-    display: none;
-    align-items: center;
-    justify-content: center;
-    z-index: 200;
-    pointer-events: auto;
-  }
-  .modal-content {
-    background-color: white;
-    padding: 25px;
-    border-radius: 20px;
-    width: 340px;
-    max-height: 90vh;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-  }
+  .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 200; pointer-events: auto; }
+  .modal-content { background-color: white; padding: 25px; border-radius: 20px; width: 340px; max-height: 90vh; display: flex; flex-direction: column; gap: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
   .modal-content h2 { margin: 0; font-size: 20px; color: #333; text-align: center; }
-  .modal-content textarea {
-    padding: 10px; font-size: 15px; border: 1px solid #ddd; border-radius: 8px; outline: none; resize: vertical;
-  }
+  .modal-content textarea { padding: 10px; font-size: 15px; border: 1px solid #ddd; border-radius: 8px; outline: none; resize: vertical; }
   .modal-content textarea:focus { border-color: #2ecc71; }
   
+  .btn-wrap {
+    flex: 1; padding: 8px; font-size: 13px; font-weight: bold; border: 1px solid #bdc3c7; border-radius: 8px; background-color: #f8f9f9; color: #2c3e50; cursor: pointer; transition: background 0.2s;
+  }
+  .btn-wrap:hover { background-color: #e5e8e8; }
+
   .modal-buttons { display: flex; gap: 8px; margin-top: 5px; }
   .modal-buttons button { flex: 1; padding: 12px; font-size: 15px; font-weight: bold; border: none; border-radius: 10px; cursor: pointer; }
   .btn-cancel { background-color: #bdc3c7; color: white; }
@@ -354,10 +232,7 @@
   .btn-delete:hover { background-color: #c0392b; }
 
   .mastered-list { overflow-y: auto; max-height: 300px; margin-top: 10px; }
-  
-  .mastered-item {
-    padding: 12px; background-color: #f9f9f9; border-bottom: 1px solid #eee; border-radius: 6px; margin-bottom: 6px; font-weight: bold; color: #f39c12; display: flex; justify-content: space-between; cursor: pointer; transition: background-color 0.2s;
-  }
+  .mastered-item { padding: 12px; background-color: #f9f9f9; border-bottom: 1px solid #eee; border-radius: 6px; margin-bottom: 6px; font-weight: bold; color: #f39c12; display: flex; justify-content: space-between; cursor: pointer; transition: background-color 0.2s; }
   .mastered-item:hover { background-color: #eef2f5; }
   
   #view-modal { z-index: 300; }
@@ -417,9 +292,18 @@
 <div class="modal-overlay" id="form-modal">
   <div class="modal-content">
     <h2 id="modal-title">새 문장 추가하기</h2>
-    <textarea id="new-name" rows="3" placeholder="문제 (앞면) 예: I am looking forward ___ seeing you."></textarea>
-    <textarea id="new-hint" rows="2" placeholder="힌트 (선택사항) 예: 전치사를 생각해봐"></textarea>
-    <textarea id="new-content" rows="3" placeholder="정답 (뒷면) 예: to"></textarea>
+    <div style="font-size: 12px; color: #e67e22; background: #fdf2e9; padding: 8px; border-radius: 6px; margin-bottom: 2px;">
+      <b>💡 스마트 빈칸 기능</b><br>문제에 <code>[[숫자]]</code> 와 <code>{{명칭}}</code> 을 섞어 쓰면 두 가지 버전의 문제가 번갈아 나와! (대괄호 2개 필수)
+    </div>
+    
+    <div style="display: flex; gap: 8px; margin-bottom: 2px;">
+      <button type="button" class="btn-wrap" onmousedown="event.preventDefault()" onclick="wrapText('[[', ']]')">[[ 숫자 ]]</button>
+      <button type="button" class="btn-wrap" onmousedown="event.preventDefault()" onclick="wrapText('{{', '}}')">{{ 명칭 }}</button>
+    </div>
+
+    <textarea id="new-name" rows="3" placeholder="문제 예: [[6]]㎟ 이상의 {{특고압 접지도체}}"></textarea>
+    <textarea id="new-hint" rows="2" placeholder="힌트 (선택사항)"></textarea>
+    <textarea id="new-content" rows="2" placeholder="정답/추가 설명 (스마트 빈칸 시 뒷면에 함께 표시됨)"></textarea>
     
     <div style="display: flex; align-items: center; gap: 8px; margin-top: 5px;">
       <input type="checkbox" id="new-hidden" style="width: auto; cursor: pointer;">
@@ -437,7 +321,7 @@
 <div class="modal-overlay" id="mastered-modal">
   <div class="modal-content">
     <h2>🏆 마스터한 문장</h2>
-    <p style="margin:0; font-size:12px; color:#7f8c8d; text-align:center;">덱이 5번 돌면 복습을 위해 다시 등장해!<br>(누르면 내용을 볼 수 있어)</p>
+    <p style="margin:0; font-size:12px; color:#7f8c8d; text-align:center;">덱이 5번 돌면 복습을 위해 다시 등장해!</p>
     <div id="mastered-list" class="mastered-list"></div>
     <div class="modal-buttons">
       <button class="btn-cancel" style="width: 100%;" onclick="closeMasteredModal()">닫기</button>
@@ -471,12 +355,6 @@
 </div>
 
 <script>
-  const initialData = [
-    { name: "(  )이란 감리업자를 대표하여 현장에 상주하면서 해당 공사 전반에 관하여 책임 감리 등의 업무를 총괄하는 사람을 말한다.\n\n(  )이란 책임감리원을 보좌하는 사람으로서 담당 감리업무를 책임감리원과 연대하여 책임지는 사람을 한다.\n\n(  )이란 감리업체에 근무하면서 상주감리원의 업무를 기술적•행정적으로 지원하는 사람을 말한다.", content: "1. 책임감리원\n2. 보조감리원\n3. 비상주감리원", hint: "감리원 3가지 종류를 순서대로!", isHidden: false },
-    { name: "It's a piece of ___", content: "cake\n(식은 죽 먹기)", hint: "달콤한 디저트", isHidden: false },
-    { name: "Procrastination is the thief of ___.", content: "time\n(미루는 버릇은 시간 도둑이다.)", hint: "금보다 소중한 것", isHidden: false }
-  ];
-
   let deckCycleCount = 0;
   let activeCards = [];
   let masteredCards = [];
@@ -486,7 +364,7 @@
   let currentEditTarget = null;
   let currentViewTarget = null;
   let currentMode = 'add';
-  let hintTimer = null; // 힌트 토스트 타이머
+  let hintTimer = null; 
 
   const cardContainer = document.getElementById('card-container');
   const card = document.getElementById('flashcard');
@@ -499,6 +377,81 @@
   const btnCorrect = document.getElementById('btn-correct');
   const btnNext = document.getElementById('btn-next');
   const btnHide = document.getElementById('btn-hide');
+
+  // --- 모바일 드래그 래퍼 함수 ---
+  function wrapText(open, close) {
+    const textarea = document.getElementById('new-name');
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const text = textarea.value;
+    const selected = text.substring(start, end);
+    
+    textarea.value = text.substring(0, start) + open + selected + close + text.substring(end);
+    textarea.focus();
+    // 드래그된 상태 유지
+    textarea.selectionStart = start + open.length;
+    textarea.selectionEnd = end + open.length;
+  }
+
+  // --- 스마트 빈칸 로직 ---
+  function getCardType(text) {
+    const hasA = /\[\[.*?\]\]/.test(text); 
+    const hasB = /\{\{.*?\}\}/.test(text); 
+    if(hasA && hasB) return 'cloze-ab';
+    if(hasA) return 'cloze-a';
+    if(hasB) return 'cloze-b';
+    return 'normal';
+  }
+
+  function upgradeCardData(card) {
+    card.type = getCardType(card.name);
+    card.hint = card.hint || "";
+    card.lastUpdatedCycle = card.lastUpdatedCycle || deckCycleCount;
+    card.isHidden = card.isHidden || false;
+    card.isCorrectInCurrentCycle = false;
+
+    if (card.type.startsWith('cloze')) {
+      card.correctCountA = card.correctCountA !== undefined ? card.correctCountA : (card.correctCount || 0);
+      card.correctCountB = card.correctCountB !== undefined ? card.correctCountB : (card.correctCount || 0);
+      if (!card.nextMode) {
+        if (card.type === 'cloze-ab') {
+          if (card.correctCountA >= 4) card.nextMode = 'B';
+          else if (card.correctCountB >= 4) card.nextMode = 'A';
+          else card.nextMode = 'B'; // 첫 바퀴 세팅용
+        } else if (card.type === 'cloze-a') {
+          card.nextMode = 'A';
+        } else {
+          card.nextMode = 'B';
+        }
+      }
+    } else {
+      card.correctCount = card.correctCount !== undefined ? card.correctCount : 0;
+    }
+    return card;
+  }
+
+  function parseClozeText(text, mode) {
+    let safeText = text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    let answers = [];
+
+    if (mode === 'A') {
+      safeText = safeText.replace(/\[\[(.*?)\]\]/g, (m, p1) => { 
+          answers.push(p1); 
+          return `<span style="color:#e74c3c; font-weight:bold;">( ${answers.length} )</span>`; 
+      });
+      safeText = safeText.replace(/\{\{(.*?)\}\}/g, "$1");
+    } else if (mode === 'B') {
+      safeText = safeText.replace(/\{\{(.*?)\}\}/g, (m, p1) => { 
+          answers.push(p1); 
+          return `<span style="color:#3498db; font-weight:bold;">( ${answers.length} )</span>`; 
+      });
+      safeText = safeText.replace(/\[\[(.*?)\]\]/g, "$1");
+    }
+
+    let back = answers.length > 0 ? answers.map((a,i) => `${i+1}. ${a}`).join('\n') : "정답 없음";
+    return { front: safeText, back: back };
+  }
+  // ------------------------
 
   function toggleFabMenu() {
     const menu = document.getElementById('fab-menu');
@@ -518,13 +471,7 @@
   });
 
   function saveData() {
-    const data = {
-      activeCards: activeCards,
-      masteredCards: masteredCards,
-      deckCycleCount: deckCycleCount,
-      shuffledDeck: shuffledDeck,
-      currentIndex: currentIndex
-    };
+    const data = { activeCards, masteredCards, deckCycleCount, shuffledDeck, currentIndex };
     localStorage.setItem('sentenceApp_data', JSON.stringify(data));
   }
 
@@ -534,50 +481,27 @@
       try {
         const data = JSON.parse(saved);
         deckCycleCount = data.deckCycleCount || 0;
-        
-        activeCards = data.activeCards.map(f => ({
-          ...f,
-          hint: f.hint || "",
-          lastUpdatedCycle: f.lastUpdatedCycle !== undefined ? f.lastUpdatedCycle : deckCycleCount,
-          isCorrectInCurrentCycle: f.isCorrectInCurrentCycle || false,
-          isHidden: f.isHidden || false 
-        }));
-        masteredCards = data.masteredCards.map(f => ({ ...f, hint: f.hint || "", isHidden: f.isHidden || false })) || [];
+        activeCards = data.activeCards.map(upgradeCardData);
+        masteredCards = data.masteredCards.map(upgradeCardData) || [];
         
         if (data.shuffledDeck && data.shuffledDeck.length > 0) {
           shuffledDeck = data.shuffledDeck.map(savedCard =>
             activeCards.find(f => f.name === savedCard.name) || masteredCards.find(f => f.name === savedCard.name)
           ).filter(Boolean);
-          
           currentIndex = data.currentIndex || 0;
         } else {
-          shuffledDeck = [];
-          currentIndex = 0;
+          shuffledDeck = []; currentIndex = 0;
         }
-      } catch (e) {
-        initDefaultData();
-      }
-    } else {
-      initDefaultData();
-    }
+      } catch (e) { initDefaultData(); }
+    } else { initDefaultData(); }
   }
 
   function initDefaultData() {
-    activeCards = initialData.map(f => ({ 
-      ...f, hint: f.hint || "", correctCount: 0, lastUpdatedCycle: 0, isCorrectInCurrentCycle: false, isHidden: false
-    }));
-    masteredCards = [];
-    deckCycleCount = 0;
-    shuffledDeck = [];
-    currentIndex = 0;
+    activeCards = []; masteredCards = []; deckCycleCount = 0; shuffledDeck = []; currentIndex = 0;
   }
 
   function downloadBackup() {
-    const data = { 
-      activeCards: activeCards, 
-      masteredCards: masteredCards, 
-      deckCycleCount: deckCycleCount 
-    };
+    const data = { activeCards, masteredCards, deckCycleCount };
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data));
     const downloadAnchorNode = document.createElement('a');
     downloadAnchorNode.setAttribute("href", dataStr);
@@ -598,17 +522,9 @@
         const data = JSON.parse(e.target.result);
         if (data.activeCards && Array.isArray(data.masteredCards)) {
           deckCycleCount = data.deckCycleCount || 0;
-          activeCards = data.activeCards.map(f => ({
-            ...f,
-            hint: f.hint || "",
-            lastUpdatedCycle: f.lastUpdatedCycle !== undefined ? f.lastUpdatedCycle : deckCycleCount,
-            isCorrectInCurrentCycle: false,
-            isHidden: f.isHidden || false
-          }));
-          masteredCards = data.masteredCards.map(f => ({ ...f, hint: f.hint || "", isHidden: f.isHidden || false }));
-          
-          resetDeck(); 
-          updateUI();
+          activeCards = data.activeCards.map(upgradeCardData);
+          masteredCards = data.masteredCards.map(upgradeCardData);
+          resetDeck(); updateUI();
           alert("데이터를 성공적으로 불러왔어!");
         } else { alert("파일 형식이 맞지 않아!"); }
       } catch(err) { alert("파일을 읽는 중 오류가 발생했어."); }
@@ -617,17 +533,12 @@
     event.target.value = '';
   }
 
-  let pressTimer;
-  let isLongPress = false;
-  let startX = null;
-  let startY = null;
+  let pressTimer; let isLongPress = false; let startX = null; let startY = null;
 
   cardContainer.addEventListener('mousedown', startPress);
   cardContainer.addEventListener('touchstart', startPress, {passive: true});
-  
   cardContainer.addEventListener('mousemove', movePress);
   cardContainer.addEventListener('touchmove', movePress, {passive: true});
-
   cardContainer.addEventListener('mouseup', endPress);
   cardContainer.addEventListener('mouseleave', endPress);
   cardContainer.addEventListener('touchend', endPress);
@@ -641,11 +552,9 @@
     if (e.target.id === 'btn-hint') return;
     if (shuffledDeck.length === 0) return;
     isLongPress = false;
-    
     let clientX = e.touches ? e.touches[0].clientX : e.clientX;
     let clientY = e.touches ? e.touches[0].clientY : e.clientY;
-    startX = clientX;
-    startY = clientY;
+    startX = clientX; startY = clientY;
 
     pressTimer = setTimeout(() => {
       isLongPress = true;
@@ -658,17 +567,10 @@
     if (!startX || !startY) return;
     let clientX = e.touches ? e.touches[0].clientX : e.clientX;
     let clientY = e.touches ? e.touches[0].clientY : e.clientY;
-    
-    if (Math.abs(clientX - startX) > 10 || Math.abs(clientY - startY) > 10) {
-      clearTimeout(pressTimer);
-    }
+    if (Math.abs(clientX - startX) > 10 || Math.abs(clientY - startY) > 10) clearTimeout(pressTimer);
   }
 
-  function endPress(e) { 
-    clearTimeout(pressTimer); 
-    startX = null;
-    startY = null;
-  }
+  function endPress(e) { clearTimeout(pressTimer); startX = null; startY = null; }
 
   function shuffle(array) {
     for (let i = array.length - 1; i > 0; i--) {
@@ -682,9 +584,7 @@
     if (shuffledDeck.length === 0) return;
     let currentCard = shuffledDeck[currentIndex];
     currentCard.isHidden = !currentCard.isHidden;
-    
-    saveData();
-    updateUI(card.classList.contains('flipped'));
+    saveData(); updateUI(card.classList.contains('flipped'));
   }
 
   function showHint(event) {
@@ -697,41 +597,55 @@
         clearTimeout(hintTimer);
         return;
     }
-
     if (currentCard && currentCard.hint) {
       hintToast.innerText = "💡 " + currentCard.hint;
       hintToast.classList.add('show');
-      
       clearTimeout(hintTimer);
-      hintTimer = setTimeout(() => {
-        hintToast.classList.remove('show');
-      }, 3000);
+      hintTimer = setTimeout(() => { hintToast.classList.remove('show'); }, 3000);
     }
   }
 
   function resetDeck() {
     deckCycleCount++;
     
+    // 1. 마스터 카드 복귀
     for (let i = masteredCards.length - 1; i >= 0; i--) {
       let mCard = masteredCards[i];
       if (!mCard.isHidden && (deckCycleCount - mCard.masteredAtCycle >= 5)) {
-        mCard.correctCount = 4;
+        if (mCard.type === 'normal') mCard.correctCount = 4;
+        else {
+            mCard.correctCountA = mCard.type.includes('a') ? 3 : 0;
+            mCard.correctCountB = mCard.type.includes('b') ? 3 : 0;
+        }
         mCard.lastUpdatedCycle = deckCycleCount;
         activeCards.push(mCard);
         masteredCards.splice(i, 1);
       }
     }
     
-    activeCards.forEach(card => {
-      card.isCorrectInCurrentCycle = false;
-      if (!card.isHidden && card.correctCount >= 3 && (deckCycleCount - card.lastUpdatedCycle >= 5)) {
-        card.correctCount -= 1;
-        card.lastUpdatedCycle = deckCycleCount;
+    // 2. 점수 깎기
+    activeCards.forEach(c => {
+      c.isCorrectInCurrentCycle = false;
+      if (!c.isHidden && (deckCycleCount - c.lastUpdatedCycle >= 5)) {
+        if (c.type === 'normal' && c.correctCount >= 3) c.correctCount -= 1;
+        else if (c.type.startsWith('cloze')) {
+            if (c.type.includes('a') && c.correctCountA >= 2) c.correctCountA -= 1;
+            if (c.type.includes('b') && c.correctCountB >= 2) c.correctCountB -= 1;
+        }
+        c.lastUpdatedCycle = deckCycleCount;
       }
     });
 
     let availableActive = activeCards.filter(c => !c.isHidden);
     let availableMaster = masteredCards.filter(c => !c.isHidden);
+
+    availableActive.forEach(c => {
+      if (c.type === 'cloze-ab') {
+        if (c.correctCountA >= 4) c.nextMode = 'B';
+        else if (c.correctCountB >= 4) c.nextMode = 'A';
+        else c.nextMode = c.nextMode === 'A' ? 'B' : 'A';
+      }
+    });
 
     if (availableActive.length === 0 && availableMaster.length > 0) {
       let minCycles = 5;
@@ -739,10 +653,9 @@
         let left = 5 - (deckCycleCount - f.masteredAtCycle);
         if (left < minCycles) minCycles = left;
       });
-      
       if (minCycles > 0 && minCycles <= 5) {
         deckCycleCount += (minCycles - 1);
-        alert(`💡 현재 학습할 카드가 없어서 시간을 ${minCycles}턴 앞당겼어!\n다시 복습을 시작해 보자!`);
+        alert(`💡 현재 학습할 카드가 없어서 시간을 ${minCycles}턴 앞당겼어!`);
         return resetDeck(); 
       }
     }
@@ -769,167 +682,153 @@
         let totalCards = activeCards.length + masteredCards.length;
         
         if (totalCards > 0 && totalHidden === totalCards) {
-          frontDisplay.innerText = "텅~ 비었어!";
-          textDisplay.innerText = "모든 카드가 숨김 처리되어 있어!\n전체 목록에서 숨김을 해제해 봐.";
+          frontDisplay.innerText = "텅~ 비었어!"; textDisplay.innerText = "모든 카드가 숨김 처리되어 있어!\n전체 목록에서 숨김을 해제해 봐.";
         } else if(activeCards.length === 0 && masteredCards.length === 0) {
-          frontDisplay.innerText = "텅~ 비었어!";
-          textDisplay.innerText = "새로운 문장을 추가해 봐!";
+          frontDisplay.innerText = "텅~ 비었어!"; textDisplay.innerText = "새로운 문장을 추가해 봐!";
         } else {
-          frontDisplay.innerText = "🏆 완벽해!";
-          textDisplay.innerText = "현재 나타난 모든 문장을 마스터했어!";
+          frontDisplay.innerText = "🏆 완벽해!"; textDisplay.innerText = "현재 나타난 모든 문장을 마스터했어!";
         }
         
-        progressText.textContent = "0 / 0";
-        progressBarFill.style.width = "100%";
+        progressText.textContent = "0 / 0"; progressBarFill.style.width = "100%";
         btnCorrect.textContent = "✔ 정답 (0/5)";
-        
-        btnPrev.disabled = true;
-        btnHide.disabled = true;
-        btnHide.style.borderColor = "transparent";
-        btnCorrect.disabled = true;
-        btnNext.disabled = true;
-        btnHint.style.display = 'none';
+        btnPrev.disabled = true; btnHide.disabled = true; btnHide.style.borderColor = "transparent";
+        btnCorrect.disabled = true; btnNext.disabled = true; btnHint.style.display = 'none';
         cardContainer.classList.remove('card-hidden-anim');
         return;
       }
 
       btnHide.disabled = false;
       const currentCard = shuffledDeck[currentIndex];
-      frontDisplay.innerText = currentCard.name;
-      textDisplay.innerText = currentCard.content;
-
-      if (currentCard.hint && currentCard.hint.trim() !== "") {
-          btnHint.style.display = 'block';
+      
+      let displayMode = '';
+      if (currentCard.type.startsWith('cloze')) {
+          displayMode = currentCard.nextMode;
+          const parsed = parseClozeText(currentCard.name, displayMode);
+          frontDisplay.innerHTML = parsed.front;
+          let extra = currentCard.content ? `\n\n<span style="color:#7f8c8d; font-size:14px;">--- 추가 내용 ---\n${currentCard.content.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</span>` : "";
+          textDisplay.innerHTML = parsed.back + extra;
       } else {
-          btnHint.style.display = 'none';
+          frontDisplay.innerText = currentCard.name;
+          textDisplay.innerText = currentCard.content;
       }
+
+      btnHint.style.display = (currentCard.hint && currentCard.hint.trim() !== "") ? 'block' : 'none';
 
       if (currentCard.isHidden) {
         cardContainer.classList.add('card-hidden-anim');
-        btnHide.textContent = "👀 취소";
-        btnHide.style.color = "#e74c3c";
-        btnHide.style.borderColor = "#e74c3c";
-        btnHide.style.backgroundColor = "#fdf2f1";
+        btnHide.textContent = "👀 취소"; btnHide.style.color = "#e74c3c"; btnHide.style.borderColor = "#e74c3c"; btnHide.style.backgroundColor = "#fdf2f1";
         btnCorrect.disabled = true; 
       } else {
         cardContainer.classList.remove('card-hidden-anim');
-        btnHide.textContent = "🫥 숨김";
-        btnHide.style.color = "#7f8c8d";
-        btnHide.style.borderColor = "#bdc3c7";
-        btnHide.style.backgroundColor = "white";
-        
-        if (keepFlipped || card.classList.contains('flipped')) {
-          btnCorrect.disabled = false;
-        }
+        btnHide.textContent = "🫥 숨김"; btnHide.style.color = "#7f8c8d"; btnHide.style.borderColor = "#bdc3c7"; btnHide.style.backgroundColor = "white";
+        if (keepFlipped || card.classList.contains('flipped')) btnCorrect.disabled = false;
       }
 
-      if (currentCard.isCorrectInCurrentCycle) {
-        btnCorrect.textContent = `❌ 정답 취소 (${currentCard.correctCount}/5)`;
-        btnCorrect.classList.add('btn-undo');
-        btnCorrect.classList.remove('btn-correct');
+      if (currentCard.type.startsWith('cloze')) {
+          let target = currentCard.type === 'cloze-ab' ? 4 : 5; 
+          let count = displayMode === 'A' ? currentCard.correctCountA : currentCard.correctCountB;
+          let modeText = currentCard.type === 'cloze-ab' ? ` 모드${displayMode}` : '';
+          
+          if (currentCard.isCorrectInCurrentCycle) {
+            btnCorrect.textContent = `❌ 취소 (${count}/${target})`;
+            btnCorrect.classList.add('btn-undo'); btnCorrect.classList.remove('btn-correct');
+          } else {
+            btnCorrect.textContent = `✔ 정답${modeText} (${count}/${target})`;
+            btnCorrect.classList.add('btn-correct'); btnCorrect.classList.remove('btn-undo');
+          }
       } else {
-        btnCorrect.textContent = `✔ 정답 (${currentCard.correctCount}/5)`;
-        btnCorrect.classList.add('btn-correct');
-        btnCorrect.classList.remove('btn-undo');
+          if (currentCard.isCorrectInCurrentCycle) {
+            btnCorrect.textContent = `❌ 정답 취소 (${currentCard.correctCount}/5)`;
+            btnCorrect.classList.add('btn-undo'); btnCorrect.classList.remove('btn-correct');
+          } else {
+            btnCorrect.textContent = `✔ 정답 (${currentCard.correctCount}/5)`;
+            btnCorrect.classList.add('btn-correct'); btnCorrect.classList.remove('btn-undo');
+          }
       }
       
       const total = shuffledDeck.length;
       const currentNum = currentIndex + 1;
       progressText.textContent = `${currentNum} / ${total}`;
-      
-      const progressPercent = (currentNum / total) * 100;
-      progressBarFill.style.width = `${progressPercent}%`;
+      progressBarFill.style.width = `${(currentNum / total) * 100}%`;
 
       btnPrev.disabled = (currentIndex === 0);
-      
-      if (keepFlipped && !currentCard.isHidden) {
-        btnNext.disabled = false;
-      } else if (currentCard.isHidden) {
-        btnNext.disabled = false;
-      }
+      if ((keepFlipped && !currentCard.isHidden) || currentCard.isHidden) btnNext.disabled = false;
 
     }, 150);
   }
 
   function flipCard() {
-    // 핵심 수정 사항: 카드를 뒤집을 때 무조건 힌트 말풍선 닫기
     document.getElementById('hint-toast').classList.remove('show'); 
-    
     card.classList.toggle('flipped');
     if (card.classList.contains('flipped')) {
-      if (shuffledDeck.length > 0 && !shuffledDeck[currentIndex].isHidden) {
-        btnCorrect.disabled = false;
-      }
+      if (shuffledDeck.length > 0 && !shuffledDeck[currentIndex].isHidden) btnCorrect.disabled = false;
       btnNext.disabled = false;
     } else {
-      btnCorrect.disabled = true;
-      btnNext.disabled = true;
+      btnCorrect.disabled = true; btnNext.disabled = true;
     }
   }
 
   function markCorrect() {
     if (shuffledDeck.length === 0) return;
-    
-    let currentCard = shuffledDeck[currentIndex];
+    let c = shuffledDeck[currentIndex];
 
-    if (currentCard.isCorrectInCurrentCycle) {
-      currentCard.correctCount -= 1;
-      currentCard.isCorrectInCurrentCycle = false;
-      saveData();
-      updateUI(true); 
+    if (c.isCorrectInCurrentCycle) { 
+      c.isCorrectInCurrentCycle = false;
+      if (c.type === 'normal') c.correctCount -= 1;
+      else {
+          if (c.lastAnsweredMode === 'A') c.correctCountA -= 1;
+          else c.correctCountB -= 1;
+      }
+      saveData(); updateUI(true); 
     } 
-    else {
-      currentCard.correctCount += 1;
-      currentCard.lastUpdatedCycle = deckCycleCount;
-      currentCard.isCorrectInCurrentCycle = true;
+    else { 
+      c.isCorrectInCurrentCycle = true;
+      c.lastUpdatedCycle = deckCycleCount;
+      
+      if (c.type === 'normal') c.correctCount += 1;
+      else {
+          c.lastAnsweredMode = c.nextMode;
+          if (c.nextMode === 'A') c.correctCountA += 1;
+          else c.correctCountB += 1;
+      }
 
-      if (currentCard.correctCount >= 5) {
+      let isMastered = false;
+      if (c.type === 'normal') isMastered = c.correctCount >= 5;
+      else if (c.type === 'cloze-ab') isMastered = (c.correctCountA >= 4 && c.correctCountB >= 4);
+      else if (c.type === 'cloze-a') isMastered = c.correctCountA >= 5;
+      else if (c.type === 'cloze-b') isMastered = c.correctCountB >= 5;
+
+      if (isMastered) {
         cardContainer.classList.add('fly-away');
-        currentCard.masteredAtCycle = deckCycleCount;
+        c.masteredAtCycle = deckCycleCount;
         
         setTimeout(() => {
           cardContainer.classList.remove('fly-away');
-          
-          if (!masteredCards.includes(currentCard)) {
-            activeCards = activeCards.filter(c => c !== currentCard);
-            masteredCards.push(currentCard);
+          if (!masteredCards.includes(c)) {
+            activeCards = activeCards.filter(item => item !== c);
+            masteredCards.push(c);
           }
           shuffledDeck.splice(currentIndex, 1);
-          
-          if (shuffledDeck.length === 0) {
-            resetDeck();
-          } else if (currentIndex >= shuffledDeck.length) {
-            resetDeck(); 
-          }
-          
-          saveData();
-          updateUI(); 
+          if (shuffledDeck.length === 0 || currentIndex >= shuffledDeck.length) resetDeck();
+          saveData(); updateUI(); 
         }, 500);
-
       } else {
         currentIndex++;
-        if (currentIndex >= shuffledDeck.length) { resetDeck(); }
-        saveData();
-        updateUI(); 
+        if (currentIndex >= shuffledDeck.length) resetDeck();
+        saveData(); updateUI(); 
       }
     }
   }
 
   function prevCard() {
     if (shuffledDeck.length === 0 || currentIndex === 0) return;
-    currentIndex--;
-    saveData();
-    updateUI();
+    currentIndex--; saveData(); updateUI();
   }
 
   function nextCard() {
     if (shuffledDeck.length === 0) return;
-    if (currentIndex === shuffledDeck.length - 1) {
-      resetDeck();
-    } else {
-      currentIndex++;
-      saveData(); 
-    }
+    if (currentIndex === shuffledDeck.length - 1) resetDeck();
+    else { currentIndex++; saveData(); }
     updateUI();
   }
 
@@ -947,28 +846,21 @@
 
     if (mode === 'edit' && currentEditTarget) {
       modalTitle.textContent = "✏️ 문장 편집하기";
-      submitBtn.textContent = "저장하기";
-      deleteBtn.style.display = 'block';
+      submitBtn.textContent = "저장하기"; deleteBtn.style.display = 'block';
       nameInput.value = currentEditTarget.name;
       hintInput.value = currentEditTarget.hint || "";
       contentInput.value = currentEditTarget.content;
       hiddenCheckbox.checked = currentEditTarget.isHidden || false;
     } else {
       modalTitle.textContent = "새 문장 추가하기";
-      submitBtn.textContent = "추가하기";
-      deleteBtn.style.display = 'none';
-      nameInput.value = "";
-      hintInput.value = "";
-      contentInput.value = "";
+      submitBtn.textContent = "추가하기"; deleteBtn.style.display = 'none';
+      nameInput.value = ""; hintInput.value = ""; contentInput.value = "";
       hiddenCheckbox.checked = false;
     }
-    
     document.getElementById('form-modal').style.display = 'flex';
   }
 
-  function closeFormModal() {
-    document.getElementById('form-modal').style.display = 'none';
-  }
+  function closeFormModal() { document.getElementById('form-modal').style.display = 'none'; }
 
   function submitCard() {
     const name = document.getElementById('new-name').value.trim();
@@ -976,9 +868,13 @@
     const content = document.getElementById('new-content').value.trim();
     const isHidden = document.getElementById('new-hidden').checked;
 
-    if (name === "" || content === "") {
-      alert("문제와 정답을 모두 입력해 줘!");
-      return;
+    if (name === "") { alert("문제를 입력해 줘!"); return; }
+
+    // 일반 카드 정답 누락 방지 로직
+    const tempType = getCardType(name);
+    if (tempType === 'normal' && content === "") {
+       alert("일반 카드는 정답(뒷면)이 비어있으면 안 돼!\n스마트 빈칸을 쓰려면 텍스트에 [[ ]] 나 {{ }} 를 추가해 줘.");
+       return;
     }
 
     if (currentMode === 'edit' && currentEditTarget) {
@@ -986,6 +882,7 @@
       currentEditTarget.hint = hint;
       currentEditTarget.content = content;
       currentEditTarget.isHidden = isHidden;
+      upgradeCardData(currentEditTarget); 
       
       if (isHidden) {
         const idx = shuffledDeck.indexOf(currentEditTarget);
@@ -996,96 +893,63 @@
         }
       }
     } else {
-      const newCard = { name: name, content: content, hint: hint, correctCount: 0, lastUpdatedCycle: deckCycleCount, isCorrectInCurrentCycle: false, isHidden: isHidden };
+      let newCard = upgradeCardData({ name: name, content: content, hint: hint, isHidden: isHidden });
       activeCards.push(newCard);
       if (!isHidden) {
-        if (shuffledDeck.length === 0) resetDeck();
-        else shuffledDeck.push(newCard);
+        if (shuffledDeck.length === 0) resetDeck(); else shuffledDeck.push(newCard);
       }
     }
-    saveData();
-    closeFormModal();
-    updateUI();
-
+    saveData(); closeFormModal(); updateUI();
     if (document.getElementById('all-list-modal').style.display === 'flex') openAllListModal();
     if (document.getElementById('mastered-modal').style.display === 'flex') openMasteredModal();
-
-    if (document.getElementById('view-modal').style.display === 'flex') {
-      viewAnyCard(currentEditTarget);
-    }
+    if (document.getElementById('view-modal').style.display === 'flex') viewAnyCard(currentEditTarget);
   }
 
   function deleteCard() {
-    if (!confirm("정말 이 카드를 삭제할까? 한 번 지우면 복구할 수 없어!")) {
-      return;
-    }
-
+    if (!confirm("정말 이 카드를 삭제할까? 한 번 지우면 복구할 수 없어!")) return;
     if (currentEditTarget) {
       activeCards = activeCards.filter(c => c !== currentEditTarget);
       masteredCards = masteredCards.filter(c => c !== currentEditTarget);
-      
       const deckIdx = shuffledDeck.indexOf(currentEditTarget);
       if (deckIdx > -1) {
         shuffledDeck.splice(deckIdx, 1);
-        if (deckIdx === currentIndex) {
-          if (currentIndex >= shuffledDeck.length) { 
-            resetDeck();
-          }
-        } else if (deckIdx < currentIndex) {
-          currentIndex--;
-        }
+        if (deckIdx === currentIndex && currentIndex >= shuffledDeck.length) resetDeck();
+        else if (deckIdx < currentIndex) currentIndex--;
       }
     }
-    
-    if (shuffledDeck.length === 0 && activeCards.filter(c => !c.isHidden).length > 0) {
-      resetDeck();
-    }
-    
-    saveData();
-    closeFormModal();
-    updateUI();
-
+    if (shuffledDeck.length === 0 && activeCards.filter(c => !c.isHidden).length > 0) resetDeck();
+    saveData(); closeFormModal(); updateUI();
     if (document.getElementById('all-list-modal').style.display === 'flex') openAllListModal();
     if (document.getElementById('mastered-modal').style.display === 'flex') openMasteredModal();
-
     closeViewModal();
   }
 
   function openMasteredModal() {
     const listContainer = document.getElementById('mastered-list');
     listContainer.innerHTML = '';
-    
     if (masteredCards.length === 0) {
-      listContainer.innerHTML = '<p style="text-align:center; color:#7f8c8d; margin-top:20px;">아직 마스터한 문장이 없어.<br>5번 맞추면 여기에 추가될 거야!</p>';
+      listContainer.innerHTML = '<p style="text-align:center; color:#7f8c8d; margin-top:20px;">아직 마스터한 문장이 없어.</p>';
     } else {
       const sortedMastered = [...masteredCards].sort((a, b) => a.name.localeCompare(b.name));
       sortedMastered.forEach((f) => {
         const item = document.createElement('div');
-        item.className = 'mastered-item';
-        item.onclick = () => viewAnyCard(f);
-        
+        item.className = 'mastered-item'; item.onclick = () => viewAnyCard(f);
         const cyclesLeft = 5 - (deckCycleCount - f.masteredAtCycle);
         const hiddenTag = f.isHidden ? `<span style="background:#bdc3c7; color:white; font-size:10px; padding:2px 5px; border-radius:4px; margin-left:5px;">숨김</span>` : "";
         const textStyle = f.isHidden ? "color:#bdc3c7; text-decoration:line-through;" : "";
-        
         item.innerHTML = `<span><span style="${textStyle}">${f.name.substring(0, 15)}...</span>${hiddenTag}</span> <span style="font-size:12px; font-weight:normal;">복습까지 ${cyclesLeft}턴 남음</span>`;
         listContainer.appendChild(item);
       });
     }
     document.getElementById('mastered-modal').style.display = 'flex';
   }
-  
-  function closeMasteredModal() {
-    document.getElementById('mastered-modal').style.display = 'none';
-  }
+  function closeMasteredModal() { document.getElementById('mastered-modal').style.display = 'none'; }
 
   function openAllListModal() {
     const listContainer = document.getElementById('all-list');
     listContainer.innerHTML = '';
-    
     const allCards = [...activeCards, ...masteredCards];
     allCards.sort((a, b) => a.name.localeCompare(b.name));
-    
     document.getElementById('all-count').textContent = allCards.length;
     
     if (allCards.length === 0) {
@@ -1093,50 +957,42 @@
     } else {
       allCards.forEach(f => {
         const item = document.createElement('div');
-        item.className = 'mastered-item';
-        item.onclick = () => viewAnyCard(f);
+        item.className = 'mastered-item'; item.onclick = () => viewAnyCard(f);
         
-        let statusText = masteredCards.includes(f) ? "🏆 마스터" : `💪 학습중 (${f.correctCount}/5)`;
+        let statusText = masteredCards.includes(f) ? "🏆 마스터" : `💪 학습중`;
+        if(!masteredCards.includes(f)) {
+            if (f.type === 'normal') statusText += ` (${f.correctCount}/5)`;
+            else if (f.type === 'cloze-ab') statusText += ` (A:${f.correctCountA}/4, B:${f.correctCountB}/4)`;
+            else if (f.type === 'cloze-a') statusText += ` (A:${f.correctCountA}/5)`;
+            else statusText += ` (B:${f.correctCountB}/5)`;
+        }
+
         const hiddenTag = f.isHidden ? `<span style="background:#bdc3c7; color:white; font-size:10px; padding:2px 5px; border-radius:4px; margin-left:5px;">숨김</span>` : "";
         const textStyle = f.isHidden ? "color:#bdc3c7; text-decoration:line-through;" : "";
-        
         item.innerHTML = `<span><span style="${textStyle}">${f.name.substring(0, 15)}...</span>${hiddenTag}</span> <span style="font-size:12px; font-weight:normal; color:#7f8c8d;">${statusText}</span>`;
         listContainer.appendChild(item);
       });
     }
     document.getElementById('all-list-modal').style.display = 'flex';
   }
-
-  function closeAllListModal() {
-    document.getElementById('all-list-modal').style.display = 'none';
-  }
+  function closeAllListModal() { document.getElementById('all-list-modal').style.display = 'none'; }
 
   function viewAnyCard(cardObj) {
     currentViewTarget = cardObj;
     document.getElementById('view-name').innerText = cardObj.name;
-    document.getElementById('view-content').innerText = cardObj.content;
+    document.getElementById('view-content').innerText = cardObj.content || "없음";
     
     const viewHint = document.getElementById('view-hint');
     if (cardObj.hint && cardObj.hint.trim() !== "") {
-      viewHint.innerText = "💡 힌트: " + cardObj.hint;
-      viewHint.style.display = 'block';
-    } else {
-      viewHint.style.display = 'none';
-    }
+      viewHint.innerText = "💡 힌트: " + cardObj.hint; viewHint.style.display = 'block';
+    } else viewHint.style.display = 'none';
     
     const viewHideBtn = document.getElementById('view-btn-hide');
     if (cardObj.isHidden) {
-      viewHideBtn.textContent = "👀 숨김 해제";
-      viewHideBtn.style.color = "#e74c3c";
-      viewHideBtn.style.borderColor = "#e74c3c";
-      viewHideBtn.style.backgroundColor = "#fdf2f1";
+      viewHideBtn.textContent = "👀 숨김 해제"; viewHideBtn.style.color = "#e74c3c"; viewHideBtn.style.borderColor = "#e74c3c"; viewHideBtn.style.backgroundColor = "#fdf2f1";
     } else {
-      viewHideBtn.textContent = "🫥 숨김";
-      viewHideBtn.style.color = "#7f8c8d";
-      viewHideBtn.style.borderColor = "#bdc3c7";
-      viewHideBtn.style.backgroundColor = "white";
+      viewHideBtn.textContent = "🫥 숨김"; viewHideBtn.style.color = "#7f8c8d"; viewHideBtn.style.borderColor = "#bdc3c7"; viewHideBtn.style.backgroundColor = "white";
     }
-
     document.getElementById('view-modal').style.display = 'flex';
   }
 
@@ -1147,51 +1003,29 @@
     
     const viewHideBtn = document.getElementById('view-btn-hide');
     if (currentViewTarget.isHidden) {
-      viewHideBtn.textContent = "👀 숨김 해제";
-      viewHideBtn.style.color = "#e74c3c";
-      viewHideBtn.style.borderColor = "#e74c3c";
-      viewHideBtn.style.backgroundColor = "#fdf2f1";
-      
+      viewHideBtn.textContent = "👀 숨김 해제"; viewHideBtn.style.color = "#e74c3c"; viewHideBtn.style.borderColor = "#e74c3c"; viewHideBtn.style.backgroundColor = "#fdf2f1";
       const idx = shuffledDeck.indexOf(currentViewTarget);
       if (idx > -1) {
           shuffledDeck.splice(idx, 1);
           if (currentIndex >= shuffledDeck.length && shuffledDeck.length > 0) currentIndex--;
       }
     } else {
-      viewHideBtn.textContent = "🫥 숨김";
-      viewHideBtn.style.color = "#7f8c8d";
-      viewHideBtn.style.borderColor = "#bdc3c7";
-      viewHideBtn.style.backgroundColor = "white";
+      viewHideBtn.textContent = "🫥 숨김"; viewHideBtn.style.color = "#7f8c8d"; viewHideBtn.style.borderColor = "#bdc3c7"; viewHideBtn.style.backgroundColor = "white";
     }
 
-    if (shuffledDeck.length === 0 && !currentViewTarget.isHidden) {
-       resetDeck();
-    } else {
-       if (shuffledDeck.length > 0 && shuffledDeck[currentIndex] === currentViewTarget) {
-         updateUI(card.classList.contains('flipped'));
-       } else {
-         updateUI();
-       }
+    if (shuffledDeck.length === 0 && !currentViewTarget.isHidden) resetDeck();
+    else {
+       if (shuffledDeck.length > 0 && shuffledDeck[currentIndex] === currentViewTarget) updateUI(card.classList.contains('flipped'));
+       else updateUI();
     }
-
     if (document.getElementById('all-list-modal').style.display === 'flex') openAllListModal();
     if (document.getElementById('mastered-modal').style.display === 'flex') openMasteredModal();
   }
-  
-  function closeViewModal() {
-    document.getElementById('view-modal').style.display = 'none';
-  }
-
-  function editViewedCard() {
-    openFormModal('edit', currentViewTarget);
-  }
+  function closeViewModal() { document.getElementById('view-modal').style.display = 'none'; }
+  function editViewedCard() { openFormModal('edit', currentViewTarget); }
 
   loadSavedData();
-  
-  if (shuffledDeck.length === 0) {
-    resetDeck();
-  }
-  
+  if (shuffledDeck.length === 0) resetDeck();
   updateUI();
 </script>
 </body>
