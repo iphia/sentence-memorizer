@@ -213,8 +213,21 @@
   .fab { width: 60px; height: 60px; border-radius: 50%; background-color: #e74c3c; color: white; font-size: 32px; border: none; cursor: pointer; box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4); transition: transform 0.3s, background-color 0.3s; display: flex; align-items: center; justify-content: center; pointer-events: auto; }
   .fab.open { transform: rotate(45deg); background-color: #c0392b; }
 
+  /* 💡 변경점: 모달창 넓게 & 내부 스크롤 추가 */
   .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 200; pointer-events: auto; }
-  .modal-content { background-color: white; padding: 25px; border-radius: 20px; width: 340px; max-height: 90vh; display: flex; flex-direction: column; gap: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+  .modal-content { 
+    background-color: white; 
+    padding: 20px; /* 패딩 살짝 줄임 */
+    border-radius: 20px; 
+    width: 90%; /* 화면 꽉 차게 확장 */
+    max-width: 420px; /* 최대 크기 확장 */
+    max-height: 90vh; /* 화면 넘어가면 안쪽에서 스크롤 되도록 */
+    display: flex; 
+    flex-direction: column; 
+    gap: 12px; 
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    overflow-y: auto; /* 핵심: 모달 내부 스크롤바 */
+  }
   .modal-content h2 { margin: 0; font-size: 20px; color: #333; text-align: center; }
   .modal-content textarea { padding: 10px; font-size: 15px; border: 1px solid #ddd; border-radius: 8px; outline: none; resize: vertical; }
   .modal-content textarea:focus { border-color: #2ecc71; }
@@ -224,7 +237,7 @@
   }
   .btn-wrap:hover { background-color: #e5e8e8; }
 
-  .modal-buttons { display: flex; gap: 8px; margin-top: 5px; }
+  .modal-buttons { display: flex; gap: 8px; margin-top: 5px; flex-shrink: 0; }
   .modal-buttons button { flex: 1; padding: 12px; font-size: 15px; font-weight: bold; border: none; border-radius: 10px; cursor: pointer; }
   .btn-cancel { background-color: #bdc3c7; color: white; }
   .btn-submit { background-color: #2ecc71; color: white; }
@@ -301,9 +314,9 @@
       <button type="button" class="btn-wrap" onmousedown="event.preventDefault()" onclick="wrapText('{{', '}}')">{{ 명칭 }}</button>
     </div>
 
-    <textarea id="new-name" rows="3" placeholder="문제 예: [[6]]㎟ 이상의 {{특고압 접지도체}}"></textarea>
+    <textarea id="new-name" rows="5" placeholder="문제 예: [[6]]㎟ 이상의 {{특고압 접지도체}}"></textarea>
     <textarea id="new-hint" rows="2" placeholder="힌트 (선택사항)"></textarea>
-    <textarea id="new-content" rows="2" placeholder="정답/추가 설명 (스마트 빈칸 시 뒷면에 함께 표시됨)"></textarea>
+    <textarea id="new-content" rows="4" placeholder="정답/추가 설명 (스마트 빈칸 시 뒷면에 함께 표시됨)"></textarea>
     
     <div style="display: flex; align-items: center; gap: 8px; margin-top: 5px;">
       <input type="checkbox" id="new-hidden" style="width: auto; cursor: pointer;">
@@ -417,7 +430,7 @@
         if (card.type === 'cloze-ab') {
           if (card.correctCountA >= 4) card.nextMode = 'B';
           else if (card.correctCountB >= 4) card.nextMode = 'A';
-          else card.nextMode = 'B'; // 첫 바퀴 세팅용
+          else card.nextMode = 'B'; 
         } else if (card.type === 'cloze-a') {
           card.nextMode = 'A';
         } else {
