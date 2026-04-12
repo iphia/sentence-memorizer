@@ -142,6 +142,28 @@
     text-align: left; 
   }
 
+  /* 💡 표 스타일 추가 */
+  .flashcard-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 10px 0;
+    font-size: 14px;
+    white-space: normal; /* 표 안에서는 띄어쓰기 정상 작동 */
+    background-color: white;
+  }
+  .flashcard-table th, .flashcard-table td {
+    border: 1px solid #bdc3c7;
+    padding: 8px 10px;
+    text-align: left;
+    word-break: keep-all;
+  }
+  .flashcard-table th {
+    background-color: #f1f2f6;
+    font-weight: 800;
+    color: #2c3e50;
+    text-align: center;
+  }
+
   .btn-hint {
     position: absolute;
     bottom: 20px;
@@ -213,20 +235,19 @@
   .fab { width: 60px; height: 60px; border-radius: 50%; background-color: #e74c3c; color: white; font-size: 32px; border: none; cursor: pointer; box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4); transition: transform 0.3s, background-color 0.3s; display: flex; align-items: center; justify-content: center; pointer-events: auto; }
   .fab.open { transform: rotate(45deg); background-color: #c0392b; }
 
-  /* 💡 변경점: 모달창 넓게 & 내부 스크롤 추가 */
   .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 200; pointer-events: auto; }
   .modal-content { 
     background-color: white; 
-    padding: 20px; /* 패딩 살짝 줄임 */
+    padding: 20px;
     border-radius: 20px; 
-    width: 90%; /* 화면 꽉 차게 확장 */
-    max-width: 420px; /* 최대 크기 확장 */
-    max-height: 90vh; /* 화면 넘어가면 안쪽에서 스크롤 되도록 */
+    width: 90%; 
+    max-width: 420px; 
+    max-height: 90vh; 
     display: flex; 
     flex-direction: column; 
     gap: 12px; 
     box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-    overflow-y: auto; /* 핵심: 모달 내부 스크롤바 */
+    overflow-y: auto; 
   }
   .modal-content h2 { margin: 0; font-size: 20px; color: #333; text-align: center; }
   .modal-content textarea { padding: 10px; font-size: 15px; border: 1px solid #ddd; border-radius: 8px; outline: none; resize: vertical; }
@@ -236,6 +257,11 @@
     flex: 1; padding: 8px; font-size: 13px; font-weight: bold; border: 1px solid #bdc3c7; border-radius: 8px; background-color: #f8f9f9; color: #2c3e50; cursor: pointer; transition: background 0.2s;
   }
   .btn-wrap:hover { background-color: #e5e8e8; }
+  
+  .btn-wrap-table {
+    background-color: #e8f8f5; border-color: #1abc9c; color: #16a085;
+  }
+  .btn-wrap-table:hover { background-color: #d1f2eb; }
 
   .modal-buttons { display: flex; gap: 8px; margin-top: 5px; flex-shrink: 0; }
   .modal-buttons button { flex: 1; padding: 12px; font-size: 15px; font-weight: bold; border: none; border-radius: 10px; cursor: pointer; }
@@ -247,6 +273,13 @@
   .mastered-list { overflow-y: auto; max-height: 300px; margin-top: 10px; }
   .mastered-item { padding: 12px; background-color: #f9f9f9; border-bottom: 1px solid #eee; border-radius: 6px; margin-bottom: 6px; font-weight: bold; color: #f39c12; display: flex; justify-content: space-between; cursor: pointer; transition: background-color 0.2s; }
   .mastered-item:hover { background-color: #eef2f5; }
+
+  #search-input {
+    width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #bdc3c7; border-radius: 10px;
+    box-sizing: border-box; outline: none; font-size: 14px; background-color: #f8f9f9;
+    transition: border-color 0.2s;
+  }
+  #search-input:focus { border-color: #3498db; }
   
   #view-modal { z-index: 300; }
   #form-modal { z-index: 400; }
@@ -306,17 +339,18 @@
   <div class="modal-content">
     <h2 id="modal-title">새 문장 추가하기</h2>
     <div style="font-size: 12px; color: #e67e22; background: #fdf2e9; padding: 8px; border-radius: 6px; margin-bottom: 2px;">
-      <b>💡 스마트 빈칸 기능</b><br>문제에 <code>[[숫자]]</code> 와 <code>{{명칭}}</code> 을 섞어 쓰면 두 가지 버전의 문제가 번갈아 나와! (대괄호 2개 필수)
+      <b>💡 스마트 빈칸 기능</b><br>문제에 <code>[[숫자]]</code> 와 <code>{{명칭}}</code> 을 섞어 쓰면 두 가지 버전의 문제가 번갈아 나와!
     </div>
     
     <div style="display: flex; gap: 8px; margin-bottom: 2px;">
       <button type="button" class="btn-wrap" onmousedown="event.preventDefault()" onclick="wrapText('[[', ']]')">[[ 숫자 ]]</button>
       <button type="button" class="btn-wrap" onmousedown="event.preventDefault()" onclick="wrapText('{{', '}}')">{{ 명칭 }}</button>
+      <button type="button" class="btn-wrap btn-wrap-table" onmousedown="event.preventDefault()" onclick="insertTableTemplate()">📊 표 넣기</button>
     </div>
 
     <textarea id="new-name" rows="5" placeholder="문제 예: [[6]]㎟ 이상의 {{특고압 접지도체}}"></textarea>
     <textarea id="new-hint" rows="2" placeholder="힌트 (선택사항)"></textarea>
-    <textarea id="new-content" rows="4" placeholder="정답/추가 설명 (스마트 빈칸 시 뒷면에 함께 표시됨)"></textarea>
+    <textarea id="new-content" rows="4" placeholder="정답/추가 설명 (여기에 표를 넣어도 좋아!)"></textarea>
     
     <div style="display: flex; align-items: center; gap: 8px; margin-top: 5px;">
       <input type="checkbox" id="new-hidden" style="width: auto; cursor: pointer;">
@@ -346,6 +380,7 @@
   <div class="modal-content">
     <h2>📚 전체 카드 목록</h2>
     <p style="margin:0; font-size:12px; color:#7f8c8d; text-align:center;">총 <span id="all-count">0</span>개의 카드가 있어!</p>
+    <input type="text" id="search-input" placeholder="🔍 문제 또는 정답 검색..." oninput="filterAllList()">
     <div id="all-list" class="mastered-list"></div>
     <div class="modal-buttons">
       <button class="btn-cancel" style="width: 100%;" onclick="closeAllListModal()">닫기</button>
@@ -391,7 +426,20 @@
   const btnNext = document.getElementById('btn-next');
   const btnHide = document.getElementById('btn-hide');
 
-  // --- 모바일 드래그 래퍼 함수 ---
+  // --- 💡 표 양식 텍스트 삽입 함수 ---
+  function insertTableTemplate() {
+    const textarea = document.getElementById('new-content');
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const text = textarea.value;
+    const template = "\n| 제목1 | 제목2 |\n|---|---|\n| 내용1 | 내용2 |\n| 내용3 | 내용4 |\n";
+    
+    textarea.value = text.substring(0, start) + template + text.substring(end);
+    textarea.focus();
+    textarea.selectionStart = start + template.length;
+    textarea.selectionEnd = start + template.length;
+  }
+
   function wrapText(open, close) {
     const textarea = document.getElementById('new-name');
     const start = textarea.selectionStart;
@@ -401,12 +449,74 @@
     
     textarea.value = text.substring(0, start) + open + selected + close + text.substring(end);
     textarea.focus();
-    // 드래그된 상태 유지
     textarea.selectionStart = start + open.length;
     textarea.selectionEnd = end + open.length;
   }
 
-  // --- 스마트 빈칸 로직 ---
+  // --- 💡 텍스트 & 마크다운 표 변환 통합 엔진 ---
+  function formatText(text, isCloze = false, mode = null) {
+    if (!text) return { formatted: "", answers: [] };
+    // 1. 보안을 위한 HTML 태그 무력화
+    let safeText = text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    let answers = [];
+
+    // 2. 스마트 빈칸 변환
+    if (isCloze) {
+      if (mode === 'A') {
+        safeText = safeText.replace(/\[\[(.*?)\]\]/g, (m, p1) => { 
+            answers.push(p1); 
+            return `<span style="color:#e74c3c; font-weight:bold;">( ${answers.length} )</span>`; 
+        });
+        safeText = safeText.replace(/\{\{(.*?)\}\}/g, "$1");
+      } else if (mode === 'B') {
+        safeText = safeText.replace(/\{\{(.*?)\}\}/g, (m, p1) => { 
+            answers.push(p1); 
+            return `<span style="color:#3498db; font-weight:bold;">( ${answers.length} )</span>`; 
+        });
+        safeText = safeText.replace(/\[\[(.*?)\]\]/g, "$1");
+      }
+    }
+
+    // 3. 마크다운 표 변환 로직
+    const lines = safeText.split('\n');
+    let inTable = false;
+    let result = [];
+    
+    for (let i = 0; i < lines.length; i++) {
+      let line = lines[i].trim();
+      // 파이프(|)로 시작하고 끝나는 줄 찾기
+      if (line.startsWith('|') && line.endsWith('|')) {
+        if (!inTable) {
+          result.push('<table class="flashcard-table">');
+          inTable = true;
+        }
+        // 구분선(|---|) 패스
+        if (line.match(/^\|(?:-+|:-+:?|-+:|:-+)(\|(?:-+|:-+:?|-+:|:-+))*\|$/)) {
+          continue; 
+        }
+        
+        let cells = line.split('|').slice(1, -1);
+        let isHeader = (i + 1 < lines.length && lines[i+1].trim().match(/^\|(?:-+|:-+:?|-+:|:-+)(\|(?:-+|:-+:?|-+:|:-+))*\|$/));
+        
+        result.push('<tr>');
+        cells.forEach(cell => {
+          let tag = isHeader ? 'th' : 'td';
+          result.push(`<${tag}>${cell.trim()}</${tag}>`);
+        });
+        result.push('</tr>');
+      } else {
+        if (inTable) {
+          result.push('</table>');
+          inTable = false;
+        }
+        result.push(lines[i]); 
+      }
+    }
+    if (inTable) result.push('</table>');
+
+    return { formatted: result.join('\n'), answers: answers };
+  }
+
   function getCardType(text) {
     const hasA = /\[\[.*?\]\]/.test(text); 
     const hasB = /\{\{.*?\}\}/.test(text); 
@@ -442,29 +552,6 @@
     }
     return card;
   }
-
-  function parseClozeText(text, mode) {
-    let safeText = text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-    let answers = [];
-
-    if (mode === 'A') {
-      safeText = safeText.replace(/\[\[(.*?)\]\]/g, (m, p1) => { 
-          answers.push(p1); 
-          return `<span style="color:#e74c3c; font-weight:bold;">( ${answers.length} )</span>`; 
-      });
-      safeText = safeText.replace(/\{\{(.*?)\}\}/g, "$1");
-    } else if (mode === 'B') {
-      safeText = safeText.replace(/\{\{(.*?)\}\}/g, (m, p1) => { 
-          answers.push(p1); 
-          return `<span style="color:#3498db; font-weight:bold;">( ${answers.length} )</span>`; 
-      });
-      safeText = safeText.replace(/\[\[(.*?)\]\]/g, "$1");
-    }
-
-    let back = answers.length > 0 ? answers.map((a,i) => `${i+1}. ${a}`).join('\n') : "정답 없음";
-    return { front: safeText, back: back };
-  }
-  // ------------------------
 
   function toggleFabMenu() {
     const menu = document.getElementById('fab-menu');
@@ -621,7 +708,6 @@
   function resetDeck() {
     deckCycleCount++;
     
-    // 1. 마스터 카드 복귀
     for (let i = masteredCards.length - 1; i >= 0; i--) {
       let mCard = masteredCards[i];
       if (!mCard.isHidden && (deckCycleCount - mCard.masteredAtCycle >= 5)) {
@@ -636,7 +722,6 @@
       }
     }
     
-    // 2. 점수 깎기
     activeCards.forEach(c => {
       c.isCorrectInCurrentCycle = false;
       if (!c.isHidden && (deckCycleCount - c.lastUpdatedCycle >= 5)) {
@@ -678,6 +763,7 @@
     saveData();
   }
 
+  // 💡 화면 그리기(렌더링) 부분 표 변환 적용
   function updateUI(keepFlipped = false) {
     document.getElementById('hint-toast').classList.remove('show'); 
 
@@ -695,11 +781,11 @@
         let totalCards = activeCards.length + masteredCards.length;
         
         if (totalCards > 0 && totalHidden === totalCards) {
-          frontDisplay.innerText = "텅~ 비었어!"; textDisplay.innerText = "모든 카드가 숨김 처리되어 있어!\n전체 목록에서 숨김을 해제해 봐.";
+          frontDisplay.innerHTML = "텅~ 비었어!"; textDisplay.innerHTML = "모든 카드가 숨김 처리되어 있어!\n전체 목록에서 숨김을 해제해 봐.";
         } else if(activeCards.length === 0 && masteredCards.length === 0) {
-          frontDisplay.innerText = "텅~ 비었어!"; textDisplay.innerText = "새로운 문장을 추가해 봐!";
+          frontDisplay.innerHTML = "텅~ 비었어!"; textDisplay.innerHTML = "새로운 문장을 추가해 봐!";
         } else {
-          frontDisplay.innerText = "🏆 완벽해!"; textDisplay.innerText = "현재 나타난 모든 문장을 마스터했어!";
+          frontDisplay.innerHTML = "🏆 완벽해!"; textDisplay.innerHTML = "현재 나타난 모든 문장을 마스터했어!";
         }
         
         progressText.textContent = "0 / 0"; progressBarFill.style.width = "100%";
@@ -716,13 +802,18 @@
       let displayMode = '';
       if (currentCard.type.startsWith('cloze')) {
           displayMode = currentCard.nextMode;
-          const parsed = parseClozeText(currentCard.name, displayMode);
-          frontDisplay.innerHTML = parsed.front;
-          let extra = currentCard.content ? `\n\n<span style="color:#7f8c8d; font-size:14px;">--- 추가 내용 ---\n${currentCard.content.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</span>` : "";
-          textDisplay.innerHTML = parsed.back + extra;
+          const parsedFront = formatText(currentCard.name, true, displayMode);
+          frontDisplay.innerHTML = parsedFront.formatted;
+          
+          let backContent = parsedFront.answers.length > 0 ? parsedFront.answers.map((a,i) => `${i+1}. ${a}`).join('\n') : "정답 없음";
+          
+          if (currentCard.content) {
+              backContent += `\n\n<span style="color:#7f8c8d; font-size:14px;">--- 추가 내용 ---\n</span>` + formatText(currentCard.content).formatted;
+          }
+          textDisplay.innerHTML = backContent;
       } else {
-          frontDisplay.innerText = currentCard.name;
-          textDisplay.innerText = currentCard.content;
+          frontDisplay.innerHTML = formatText(currentCard.name).formatted;
+          textDisplay.innerHTML = formatText(currentCard.content).formatted;
       }
 
       btnHint.style.display = (currentCard.hint && currentCard.hint.trim() !== "") ? 'block' : 'none';
@@ -883,7 +974,6 @@
 
     if (name === "") { alert("문제를 입력해 줘!"); return; }
 
-    // 일반 카드 정답 누락 방지 로직
     const tempType = getCardType(name);
     if (tempType === 'normal' && content === "") {
        alert("일반 카드는 정답(뒷면)이 비어있으면 안 돼!\n스마트 빈칸을 쓰려면 텍스트에 [[ ]] 나 {{ }} 를 추가해 줘.");
@@ -913,7 +1003,7 @@
       }
     }
     saveData(); closeFormModal(); updateUI();
-    if (document.getElementById('all-list-modal').style.display === 'flex') openAllListModal();
+    if (document.getElementById('all-list-modal').style.display === 'flex') filterAllList();
     if (document.getElementById('mastered-modal').style.display === 'flex') openMasteredModal();
     if (document.getElementById('view-modal').style.display === 'flex') viewAnyCard(currentEditTarget);
   }
@@ -932,7 +1022,7 @@
     }
     if (shuffledDeck.length === 0 && activeCards.filter(c => !c.isHidden).length > 0) resetDeck();
     saveData(); closeFormModal(); updateUI();
-    if (document.getElementById('all-list-modal').style.display === 'flex') openAllListModal();
+    if (document.getElementById('all-list-modal').style.display === 'flex') filterAllList();
     if (document.getElementById('mastered-modal').style.display === 'flex') openMasteredModal();
     closeViewModal();
   }
@@ -959,14 +1049,37 @@
   function closeMasteredModal() { document.getElementById('mastered-modal').style.display = 'none'; }
 
   function openAllListModal() {
+    document.getElementById('search-input').value = '';
+    renderAllList();
+    document.getElementById('all-list-modal').style.display = 'flex';
+  }
+
+  function closeAllListModal() { document.getElementById('all-list-modal').style.display = 'none'; }
+
+  function filterAllList() {
+    const query = document.getElementById('search-input').value;
+    renderAllList(query);
+  }
+
+  function renderAllList(searchQuery = "") {
     const listContainer = document.getElementById('all-list');
     listContainer.innerHTML = '';
-    const allCards = [...activeCards, ...masteredCards];
+    
+    let allCards = [...activeCards, ...masteredCards];
     allCards.sort((a, b) => a.name.localeCompare(b.name));
+
     document.getElementById('all-count').textContent = allCards.length;
+
+    if (searchQuery.trim() !== "") {
+      const lowerQuery = searchQuery.toLowerCase();
+      allCards = allCards.filter(card => 
+        card.name.toLowerCase().includes(lowerQuery) || 
+        (card.content && card.content.toLowerCase().includes(lowerQuery))
+      );
+    }
     
     if (allCards.length === 0) {
-      listContainer.innerHTML = '<p style="text-align:center; color:#7f8c8d; margin-top:20px;">등록된 카드가 하나도 없어!</p>';
+      listContainer.innerHTML = '<p style="text-align:center; color:#7f8c8d; margin-top:20px;">등록된 카드가 없거나 검색 결과가 없어!</p>';
     } else {
       allCards.forEach(f => {
         const item = document.createElement('div');
@@ -986,14 +1099,13 @@
         listContainer.appendChild(item);
       });
     }
-    document.getElementById('all-list-modal').style.display = 'flex';
   }
-  function closeAllListModal() { document.getElementById('all-list-modal').style.display = 'none'; }
 
   function viewAnyCard(cardObj) {
     currentViewTarget = cardObj;
-    document.getElementById('view-name').innerText = cardObj.name;
-    document.getElementById('view-content').innerText = cardObj.content || "없음";
+    // 💡 열람창에서도 표가 정상적으로 보이도록 수정
+    document.getElementById('view-name').innerHTML = formatText(cardObj.name).formatted;
+    document.getElementById('view-content').innerHTML = formatText(cardObj.content || "없음").formatted;
     
     const viewHint = document.getElementById('view-hint');
     if (cardObj.hint && cardObj.hint.trim() !== "") {
@@ -1031,7 +1143,7 @@
        if (shuffledDeck.length > 0 && shuffledDeck[currentIndex] === currentViewTarget) updateUI(card.classList.contains('flipped'));
        else updateUI();
     }
-    if (document.getElementById('all-list-modal').style.display === 'flex') openAllListModal();
+    if (document.getElementById('all-list-modal').style.display === 'flex') filterAllList();
     if (document.getElementById('mastered-modal').style.display === 'flex') openMasteredModal();
   }
   function closeViewModal() { document.getElementById('view-modal').style.display = 'none'; }
