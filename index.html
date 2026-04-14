@@ -470,13 +470,11 @@
     textarea.selectionEnd = end + open.length;
   }
 
-  // 💡 개별 빈칸을 터치했을 때 처리하는 함수
   function handleClozeClick(event, element) {
-    event.stopPropagation(); // 카드 뒤집기나 순차적 열림을 막음
+    event.stopPropagation(); 
     if (!element.classList.contains('revealed')) {
       element.classList.add('revealed');
       
-      // 모두 열렸는지 확인해서 정답 버튼 활성화
       let currentCard = shuffledDeck.length > 0 ? shuffledDeck[currentIndex] : null;
       if (!currentCard) return;
       
@@ -487,7 +485,6 @@
     }
   }
 
-  // 💡 빈칸 생성 시 개별 클릭 이벤트(handleClozeClick) 추가
   function formatText(text, isCloze = false, mode = null) {
     if (!text) return { formatted: "", answers: [] };
     let safeText = text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -560,7 +557,9 @@
     card.hint = card.hint || "";
     card.lastUpdatedCycle = card.lastUpdatedCycle || deckCycleCount;
     card.isHidden = card.isHidden || false;
-    card.isCorrectInCurrentCycle = false;
+    
+    // 💡 버그 수정: 세이브 데이터를 불러올 때 이전 정답 상태가 있으면 유지하도록 변경
+    card.isCorrectInCurrentCycle = card.isCorrectInCurrentCycle || false;
 
     if (card.type.startsWith('cloze')) {
       card.correctCountA = card.correctCountA !== undefined ? card.correctCountA : (card.correctCount || 0);
@@ -846,7 +845,6 @@
 
       btnHint.style.display = (currentCard.hint && currentCard.hint.trim() !== "") ? 'block' : 'none';
 
-      // 💡 버튼 기본 잠금 처리 (뒤집지 않아도 다음 카드는 항상 넘길 수 있음)
       if (currentCard.isHidden) {
         cardContainer.classList.add('card-hidden-anim');
         btnHide.textContent = "👀 취소"; btnHide.style.color = "#e74c3c"; btnHide.style.borderColor = "#e74c3c"; btnHide.style.backgroundColor = "#fdf2f1";
@@ -859,7 +857,7 @@
         if (keepFlipped || card.classList.contains('flipped') || currentCard.isCorrectInCurrentCycle) {
             btnCorrect.disabled = false;
         } else {
-            btnCorrect.disabled = true; // 앞면에서는 기본적으로 정답 버튼 비활성화 (빈칸이 다 열리면 그때 풀림)
+            btnCorrect.disabled = true; 
         }
         btnNext.disabled = false;
       }
@@ -875,6 +873,12 @@
           } else {
             btnCorrect.textContent = `✔ 정답${modeText} (${count}/${target})`;
             btnCorrect.classList.add('btn-correct'); btnCorrect.classList.remove('btn-undo');
+            
+            // 이미 이전에 정답처리를 안 한 상태에서 돌아왔을 때 모든 빈칸이 열려있는지 확인 후 정답버튼 해제
+            const unrevealed = document.querySelectorAll('#front-display .inline-cloze:not(.revealed)');
+            if (unrevealed.length === 0) {
+                btnCorrect.disabled = false;
+            }
           }
       } else {
           if (currentCard.isCorrectInCurrentCycle) {
@@ -896,7 +900,6 @@
     }, 150);
   }
 
-  // 💡 카드 배경 클릭 시 빈칸을 먼저 순서대로 여는 로직
   function flipCard() {
     document.getElementById('hint-toast').classList.remove('show'); 
     
@@ -905,27 +908,23 @@
 
     let isCloze = currentCard.type.startsWith('cloze');
 
-    // 스마트 빈칸인 경우, 카드를 바로 뒤집지 않고 닫혀있는 빈칸을 순서대로 찾아서 염
     if (isCloze && !card.classList.contains('flipped')) {
       const unrevealed = document.querySelectorAll('#front-display .inline-cloze:not(.revealed)');
       if (unrevealed.length > 0) {
-        unrevealed[0].classList.add('revealed'); // 첫 번째 숨겨진 빈칸 열기
+        unrevealed[0].classList.add('revealed'); 
         
-        // 방금 연 빈칸이 마지막 빈칸이었다면 정답 버튼 활성화!
         if (unrevealed.length === 1 && !currentCard.isCorrectInCurrentCycle) {
           btnCorrect.disabled = false;
         }
-        return; // 빈칸을 열었으므로 카드는 뒤집지 않고 종료
+        return; 
       }
     }
 
-    // 일반 카드이거나, 빈칸이 이미 모두 다 열린 상태라면 그제야 카드를 뒤집음
     card.classList.toggle('flipped');
     
     if (card.classList.contains('flipped')) {
       if (!currentCard.isCorrectInCurrentCycle) btnCorrect.disabled = false;
     } else {
-      // 다시 앞면으로 돌아올 때 (일반 카드) 정답 버튼 상태 잠금
       if (!isCloze && !currentCard.isCorrectInCurrentCycle) {
         btnCorrect.disabled = true;
       }
