@@ -11,6 +11,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="문장 암기장">
 <meta name="mobile-web-app-capable" content="yes">
+<link rel="apple-touch-icon" href="icon.png">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -141,6 +142,7 @@
     text-align: left; 
   }
 
+  /* 표 스타일 */
   .flashcard-table {
     width: 100%;
     border-collapse: collapse;
@@ -169,11 +171,13 @@
     border-radius: 8px;
     padding: 2px 10px;
     margin: 2px 4px;
+    cursor: pointer;
     transition: all 0.2s ease;
     font-size: 0.9em;
     vertical-align: middle;
     word-break: keep-all;
   }
+  .inline-cloze:active { transform: scale(0.95); }
   .inline-cloze-a.revealed { border-color: #e74c3c; background-color: #fdf2f1; color: #e74c3c; border-style: solid; }
   .inline-cloze-b.revealed { border-color: #3498db; background-color: #ebf5fb; color: #3498db; border-style: solid; }
   .inline-cloze .cloze-real { display: none; }
@@ -233,16 +237,12 @@
   .btn-nav:hover { background-color: #2c3e50; }
   .btn-correct { background-color: #27ae60; flex: 1; }
   .btn-correct:hover { background-color: #219653; }
-  .btn-undo { background-color: #e67e22; flex: 1; }
+  .btn-undo { background-color: #e67e22; }
   .btn-undo:hover { background-color: #d35400; }
   
   .btn-hide-action {
     background: white; border: 2px solid #bdc3c7; border-radius: 12px; font-size: 15px; cursor: pointer; padding: 0 12px; color: #7f8c8d; font-weight: bold; transition: all 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.05);
   }
-  .btn-hide-active {
-    color: #e74c3c !important; border-color: #e74c3c !important; background-color: #fdf2f1 !important;
-  }
-
   .btn-nav:disabled, .btn-correct:disabled, .btn-undo:disabled, .btn-hide-action:disabled {
     background-color: #bdc3c7 !important; color: white !important; cursor: not-allowed; box-shadow: none; transform: none; border-color: transparent !important;
   }
@@ -277,6 +277,7 @@
     flex: 1; padding: 8px; font-size: 13px; font-weight: bold; border: 1px solid #bdc3c7; border-radius: 8px; background-color: #f8f9f9; color: #2c3e50; cursor: pointer; transition: background 0.2s;
   }
   .btn-wrap:hover { background-color: #e5e8e8; }
+  
   .btn-wrap-table { background-color: #e8f8f5; border-color: #1abc9c; color: #16a085; }
   .btn-wrap-table:hover { background-color: #d1f2eb; }
 
@@ -290,11 +291,6 @@
   .mastered-list { overflow-y: auto; max-height: 300px; margin-top: 10px; }
   .mastered-item { padding: 12px; background-color: #f9f9f9; border-bottom: 1px solid #eee; border-radius: 6px; margin-bottom: 6px; font-weight: bold; color: #f39c12; display: flex; justify-content: space-between; cursor: pointer; transition: background-color 0.2s; }
   .mastered-item:hover { background-color: #eef2f5; }
-
-  /* 동적으로 추가된 요소를 위한 유틸 클래스 */
-  .text-hidden { color: #bdc3c7; text-decoration: line-through; }
-  .tag-hidden { background: #bdc3c7; color: white; font-size: 10px; padding: 2px 5px; border-radius: 4px; margin-left: 5px; }
-  .empty-msg { text-align: center; color: #7f8c8d; margin-top: 20px; }
 
   #search-input {
     width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #bdc3c7; border-radius: 10px;
@@ -425,7 +421,6 @@
 </div>
 
 <script>
-  // --- 상태 관리 ---
   let deckCycleCount = 0;
   let activeCards = [];
   let masteredCards = [];
@@ -437,65 +432,62 @@
   let currentMode = 'add';
   let hintTimer = null; 
 
-  // --- DOM 캐싱 (성능 최적화: 매번 찾지 않도록 미리 저장) ---
-  const DOM = {
-    cardContainer: document.getElementById('card-container'),
-    card: document.getElementById('flashcard'),
-    frontDisplay: document.getElementById('front-display'),
-    textDisplay: document.getElementById('text-display'),
-    progressText: document.getElementById('progress-text'),
-    progressBarFill: document.getElementById('progress-bar-fill'),
-    btnPrev: document.getElementById('btn-prev'),
-    btnCorrect: document.getElementById('btn-correct'),
-    btnNext: document.getElementById('btn-next'),
-    btnHide: document.getElementById('btn-hide'),
-    btnHint: document.getElementById('btn-hint'),
-    hintToast: document.getElementById('hint-toast'),
-    newName: document.getElementById('new-name'),
-    newHint: document.getElementById('new-hint'),
-    newContent: document.getElementById('new-content'),
-    newHidden: document.getElementById('new-hidden'),
-    modalTitle: document.getElementById('modal-title'),
-    modalSubmitBtn: document.getElementById('modal-submit-btn'),
-    modalDeleteBtn: document.getElementById('modal-delete-btn'),
-    masteredList: document.getElementById('mastered-list'),
-    allList: document.getElementById('all-list'),
-    allCount: document.getElementById('all-count'),
-    searchInput: document.getElementById('search-input'),
-    viewName: document.getElementById('view-name'),
-    viewHint: document.getElementById('view-hint'),
-    viewContent: document.getElementById('view-content'),
-    viewBtnHide: document.getElementById('view-btn-hide'),
-    formModal: document.getElementById('form-modal'),
-    masteredModal: document.getElementById('mastered-modal'),
-    allListModal: document.getElementById('all-list-modal'),
-    viewModal: document.getElementById('view-modal')
-  };
+  const cardContainer = document.getElementById('card-container');
+  const card = document.getElementById('flashcard');
+  const frontDisplay = document.getElementById('front-display');
+  const textDisplay = document.getElementById('text-display');
+  const progressText = document.getElementById('progress-text');
+  const progressBarFill = document.getElementById('progress-bar-fill');
+  
+  const btnPrev = document.getElementById('btn-prev');
+  const btnCorrect = document.getElementById('btn-correct');
+  const btnNext = document.getElementById('btn-next');
+  const btnHide = document.getElementById('btn-hide');
 
   function insertTableTemplate() {
-    const start = DOM.newContent.selectionStart;
-    const end = DOM.newContent.selectionEnd;
-    const text = DOM.newContent.value;
+    const textarea = document.getElementById('new-content');
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const text = textarea.value;
     const template = "\n| 제목1 | 제목2 |\n|---|---|\n| 내용1 | 내용2 |\n| 내용3 | 내용4 |\n";
     
-    DOM.newContent.value = text.substring(0, start) + template + text.substring(end);
-    DOM.newContent.focus();
-    DOM.newContent.selectionStart = start + template.length;
-    DOM.newContent.selectionEnd = start + template.length;
+    textarea.value = text.substring(0, start) + template + text.substring(end);
+    textarea.focus();
+    textarea.selectionStart = start + template.length;
+    textarea.selectionEnd = start + template.length;
   }
 
   function wrapText(open, close) {
-    const start = DOM.newName.selectionStart;
-    const end = DOM.newName.selectionEnd;
-    const text = DOM.newName.value;
+    const textarea = document.getElementById('new-name');
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const text = textarea.value;
     const selected = text.substring(start, end);
     
-    DOM.newName.value = text.substring(0, start) + open + selected + close + text.substring(end);
-    DOM.newName.focus();
-    DOM.newName.selectionStart = start + open.length;
-    DOM.newName.selectionEnd = end + open.length;
+    textarea.value = text.substring(0, start) + open + selected + close + text.substring(end);
+    textarea.focus();
+    textarea.selectionStart = start + open.length;
+    textarea.selectionEnd = end + open.length;
   }
 
+  // 💡 개별 빈칸을 터치했을 때 처리하는 함수
+  function handleClozeClick(event, element) {
+    event.stopPropagation(); // 카드 뒤집기나 순차적 열림을 막음
+    if (!element.classList.contains('revealed')) {
+      element.classList.add('revealed');
+      
+      // 모두 열렸는지 확인해서 정답 버튼 활성화
+      let currentCard = shuffledDeck.length > 0 ? shuffledDeck[currentIndex] : null;
+      if (!currentCard) return;
+      
+      const unrevealed = document.querySelectorAll('#front-display .inline-cloze:not(.revealed)');
+      if (unrevealed.length === 0 && !currentCard.isCorrectInCurrentCycle) {
+        document.getElementById('btn-correct').disabled = false;
+      }
+    }
+  }
+
+  // 💡 빈칸 생성 시 개별 클릭 이벤트(handleClozeClick) 추가
   function formatText(text, isCloze = false, mode = null) {
     if (!text) return { formatted: "", answers: [] };
     let safeText = text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -505,13 +497,13 @@
       if (mode === 'A') {
         safeText = safeText.replace(/\[\[(.*?)\]\]/g, (m, p1) => { 
             answers.push(p1); 
-            return `<span class="inline-cloze inline-cloze-a"><span class="cloze-placeholder">👀 터치</span><span class="cloze-real">${p1}</span></span>`; 
+            return `<span class="inline-cloze inline-cloze-a" onclick="handleClozeClick(event, this)"><span class="cloze-placeholder">👀 터치</span><span class="cloze-real">${p1}</span></span>`; 
         });
         safeText = safeText.replace(/\{\{(.*?)\}\}/g, "$1");
       } else if (mode === 'B') {
         safeText = safeText.replace(/\{\{(.*?)\}\}/g, (m, p1) => { 
             answers.push(p1); 
-            return `<span class="inline-cloze inline-cloze-b"><span class="cloze-placeholder">👀 터치</span><span class="cloze-real">${p1}</span></span>`; 
+            return `<span class="inline-cloze inline-cloze-b" onclick="handleClozeClick(event, this)"><span class="cloze-placeholder">👀 터치</span><span class="cloze-real">${p1}</span></span>`; 
         });
         safeText = safeText.replace(/\[\[(.*?)\]\]/g, "$1");
       }
@@ -528,7 +520,9 @@
           result.push('<table class="flashcard-table">');
           inTable = true;
         }
-        if (line.match(/^\|(?:-+|:-+:?|-+:|:-+)(\|(?:-+|:-+:?|-+:|:-+))*\|$/)) continue; 
+        if (line.match(/^\|(?:-+|:-+:?|-+:|:-+)(\|(?:-+|:-+:?|-+:|:-+))*\|$/)) {
+          continue; 
+        }
         
         let cells = line.split('|').slice(1, -1);
         let isHeader = (i + 1 < lines.length && lines[i+1].trim().match(/^\|(?:-+|:-+:?|-+:|:-+)(\|(?:-+|:-+:?|-+:|:-+))*\|$/));
@@ -540,7 +534,10 @@
         });
         result.push('</tr>');
       } else {
-        if (inTable) { result.push('</table>'); inTable = false; }
+        if (inTable) {
+          result.push('</table>');
+          inTable = false;
+        }
         result.push(lines[i]); 
       }
     }
@@ -586,15 +583,19 @@
   }
 
   function toggleFabMenu() {
-    document.getElementById('fab-menu').classList.toggle('open');
-    document.getElementById('main-fab').classList.toggle('open');
+    const menu = document.getElementById('fab-menu');
+    const fab = document.getElementById('main-fab');
+    menu.classList.toggle('open');
+    fab.classList.toggle('open');
   }
 
   document.addEventListener('click', (e) => {
     const container = document.querySelector('.fab-container');
     const menu = document.getElementById('fab-menu');
+    const fab = document.getElementById('main-fab');
     if (!container.contains(e.target) && menu.classList.contains('open')) {
-      toggleFabMenu();
+      menu.classList.remove('open');
+      fab.classList.remove('open');
     }
   });
 
@@ -663,21 +664,21 @@
 
   let pressTimer; let isLongPress = false; let startX = null; let startY = null;
 
-  DOM.cardContainer.addEventListener('mousedown', startPress);
-  DOM.cardContainer.addEventListener('touchstart', startPress, {passive: true});
-  DOM.cardContainer.addEventListener('mousemove', movePress);
-  DOM.cardContainer.addEventListener('touchmove', movePress, {passive: true});
-  DOM.cardContainer.addEventListener('mouseup', endPress);
-  DOM.cardContainer.addEventListener('mouseleave', endPress);
-  DOM.cardContainer.addEventListener('touchend', endPress);
+  cardContainer.addEventListener('mousedown', startPress);
+  cardContainer.addEventListener('touchstart', startPress, {passive: true});
+  cardContainer.addEventListener('mousemove', movePress);
+  cardContainer.addEventListener('touchmove', movePress, {passive: true});
+  cardContainer.addEventListener('mouseup', endPress);
+  cardContainer.addEventListener('mouseleave', endPress);
+  cardContainer.addEventListener('touchend', endPress);
   
-  DOM.cardContainer.addEventListener('click', (e) => {
+  cardContainer.addEventListener('click', (e) => {
     if (e.target.id === 'btn-hint') return;
     if (!isLongPress) flipCard();
   });
 
   function startPress(e) {
-    if (e.target.id === 'btn-hint') return;
+    if (e.target.id === 'btn-hint' || e.target.closest('.inline-cloze')) return;
     if (shuffledDeck.length === 0) return;
     isLongPress = false;
     let clientX = e.touches ? e.touches[0].clientX : e.clientX;
@@ -698,7 +699,7 @@
     if (Math.abs(clientX - startX) > 10 || Math.abs(clientY - startY) > 10) clearTimeout(pressTimer);
   }
 
-  function endPress() { clearTimeout(pressTimer); startX = null; startY = null; }
+  function endPress(e) { clearTimeout(pressTimer); startX = null; startY = null; }
 
   function shuffle(array) {
     for (let i = array.length - 1; i > 0; i--) {
@@ -712,23 +713,24 @@
     if (shuffledDeck.length === 0) return;
     let currentCard = shuffledDeck[currentIndex];
     currentCard.isHidden = !currentCard.isHidden;
-    saveData(); updateUI(DOM.card.classList.contains('flipped'));
+    saveData(); updateUI(card.classList.contains('flipped'));
   }
 
   function showHint(event) {
     event.stopPropagation(); 
+    const hintToast = document.getElementById('hint-toast');
     const currentCard = shuffledDeck[currentIndex];
     
-    if(DOM.hintToast.classList.contains('show')) {
-        DOM.hintToast.classList.remove('show');
+    if(hintToast.classList.contains('show')) {
+        hintToast.classList.remove('show');
         clearTimeout(hintTimer);
         return;
     }
     if (currentCard && currentCard.hint) {
-      DOM.hintToast.innerText = "💡 " + currentCard.hint;
-      DOM.hintToast.classList.add('show');
+      hintToast.innerText = "💡 " + currentCard.hint;
+      hintToast.classList.add('show');
       clearTimeout(hintTimer);
-      hintTimer = setTimeout(() => { DOM.hintToast.classList.remove('show'); }, 3000);
+      hintTimer = setTimeout(() => { hintToast.classList.remove('show'); }, 3000);
     }
   }
 
@@ -791,43 +793,43 @@
   }
 
   function updateUI(keepFlipped = false) {
-    DOM.hintToast.classList.remove('show'); 
+    document.getElementById('hint-toast').classList.remove('show'); 
 
     if (!keepFlipped) {
-      DOM.card.classList.remove('flipped');
+      card.classList.remove('flipped');
     }
     
     setTimeout(() => {
+      const btnHint = document.getElementById('btn-hint');
+
       if (shuffledDeck.length === 0) {
         let totalHidden = activeCards.filter(c => c.isHidden).length + masteredCards.filter(c => c.isHidden).length;
         let totalCards = activeCards.length + masteredCards.length;
         
         if (totalCards > 0 && totalHidden === totalCards) {
-          DOM.frontDisplay.innerHTML = "텅~ 비었어!"; DOM.textDisplay.innerHTML = "모든 카드가 숨김 처리되어 있어!\n전체 목록에서 숨김을 해제해 봐.";
+          frontDisplay.innerHTML = "텅~ 비었어!"; textDisplay.innerHTML = "모든 카드가 숨김 처리되어 있어!\n전체 목록에서 숨김을 해제해 봐.";
         } else if(activeCards.length === 0 && masteredCards.length === 0) {
-          DOM.frontDisplay.innerHTML = "텅~ 비었어!"; DOM.textDisplay.innerHTML = "새로운 문장을 추가해 봐!";
+          frontDisplay.innerHTML = "텅~ 비었어!"; textDisplay.innerHTML = "새로운 문장을 추가해 봐!";
         } else {
-          DOM.frontDisplay.innerHTML = "🏆 완벽해!"; DOM.textDisplay.innerHTML = "현재 나타난 모든 문장을 마스터했어!";
+          frontDisplay.innerHTML = "🏆 완벽해!"; textDisplay.innerHTML = "현재 나타난 모든 문장을 마스터했어!";
         }
         
-        DOM.progressText.textContent = "0 / 0"; DOM.progressBarFill.style.width = "100%";
-        DOM.btnCorrect.textContent = "✔ 정답 (0/5)";
-        
-        DOM.btnPrev.disabled = true; DOM.btnHide.disabled = true;
-        DOM.btnHide.classList.remove('btn-hide-active');
-        DOM.btnCorrect.disabled = true; DOM.btnNext.disabled = true; DOM.btnHint.style.display = 'none';
-        DOM.cardContainer.classList.remove('card-hidden-anim');
+        progressText.textContent = "0 / 0"; progressBarFill.style.width = "100%";
+        btnCorrect.textContent = "✔ 정답 (0/5)";
+        btnPrev.disabled = true; btnHide.disabled = true; btnHide.style.borderColor = "transparent";
+        btnCorrect.disabled = true; btnNext.disabled = true; btnHint.style.display = 'none';
+        cardContainer.classList.remove('card-hidden-anim');
         return;
       }
 
-      DOM.btnHide.disabled = false;
+      btnHide.disabled = false;
       const currentCard = shuffledDeck[currentIndex];
       
       let displayMode = '';
       if (currentCard.type.startsWith('cloze')) {
           displayMode = currentCard.nextMode;
           const parsedFront = formatText(currentCard.name, true, displayMode);
-          DOM.frontDisplay.innerHTML = parsedFront.formatted;
+          frontDisplay.innerHTML = parsedFront.formatted;
           
           let backContent = parsedFront.answers.length > 0 
             ? parsedFront.answers.map((a, i) => `${i+1}. ${a}`).join('\n') 
@@ -836,31 +838,30 @@
           if (currentCard.content) {
               backContent += `\n\n<span style="color:#7f8c8d; font-size:14px;">--- 추가 내용 ---\n</span>` + formatText(currentCard.content).formatted;
           }
-          DOM.textDisplay.innerHTML = backContent;
+          textDisplay.innerHTML = backContent;
       } else {
-          DOM.frontDisplay.innerHTML = formatText(currentCard.name).formatted;
-          DOM.textDisplay.innerHTML = formatText(currentCard.content).formatted;
+          frontDisplay.innerHTML = formatText(currentCard.name).formatted;
+          textDisplay.innerHTML = formatText(currentCard.content).formatted;
       }
 
-      DOM.btnHint.style.display = (currentCard.hint && currentCard.hint.trim() !== "") ? 'block' : 'none';
+      btnHint.style.display = (currentCard.hint && currentCard.hint.trim() !== "") ? 'block' : 'none';
 
+      // 💡 버튼 기본 잠금 처리 (뒤집지 않아도 다음 카드는 항상 넘길 수 있음)
       if (currentCard.isHidden) {
-        DOM.cardContainer.classList.add('card-hidden-anim');
-        DOM.btnHide.textContent = "👀 취소"; 
-        DOM.btnHide.classList.add('btn-hide-active');
-        DOM.btnCorrect.disabled = true; 
-        DOM.btnNext.disabled = false;
+        cardContainer.classList.add('card-hidden-anim');
+        btnHide.textContent = "👀 취소"; btnHide.style.color = "#e74c3c"; btnHide.style.borderColor = "#e74c3c"; btnHide.style.backgroundColor = "#fdf2f1";
+        btnCorrect.disabled = true; 
+        btnNext.disabled = false;
       } else {
-        DOM.cardContainer.classList.remove('card-hidden-anim');
-        DOM.btnHide.textContent = "🫥 숨김"; 
-        DOM.btnHide.classList.remove('btn-hide-active');
+        cardContainer.classList.remove('card-hidden-anim');
+        btnHide.textContent = "🫥 숨김"; btnHide.style.color = "#7f8c8d"; btnHide.style.borderColor = "#bdc3c7"; btnHide.style.backgroundColor = "white";
         
-        if (keepFlipped || DOM.card.classList.contains('flipped') || currentCard.isCorrectInCurrentCycle) {
-            DOM.btnCorrect.disabled = false;
+        if (keepFlipped || card.classList.contains('flipped') || currentCard.isCorrectInCurrentCycle) {
+            btnCorrect.disabled = false;
         } else {
-            DOM.btnCorrect.disabled = true;
+            btnCorrect.disabled = true; // 앞면에서는 기본적으로 정답 버튼 비활성화 (빈칸이 다 열리면 그때 풀림)
         }
-        DOM.btnNext.disabled = false;
+        btnNext.disabled = false;
       }
 
       if (currentCard.type.startsWith('cloze')) {
@@ -869,58 +870,64 @@
           let modeText = currentCard.type === 'cloze-ab' ? ` 모드${displayMode}` : '';
           
           if (currentCard.isCorrectInCurrentCycle) {
-            DOM.btnCorrect.textContent = `❌ 취소 (${count}/${target})`;
-            DOM.btnCorrect.classList.add('btn-undo'); DOM.btnCorrect.classList.remove('btn-correct');
+            btnCorrect.textContent = `❌ 취소 (${count}/${target})`;
+            btnCorrect.classList.add('btn-undo'); btnCorrect.classList.remove('btn-correct');
           } else {
-            DOM.btnCorrect.textContent = `✔ 정답${modeText} (${count}/${target})`;
-            DOM.btnCorrect.classList.add('btn-correct'); DOM.btnCorrect.classList.remove('btn-undo');
+            btnCorrect.textContent = `✔ 정답${modeText} (${count}/${target})`;
+            btnCorrect.classList.add('btn-correct'); btnCorrect.classList.remove('btn-undo');
           }
       } else {
           if (currentCard.isCorrectInCurrentCycle) {
-            DOM.btnCorrect.textContent = `❌ 정답 취소 (${currentCard.correctCount}/5)`;
-            DOM.btnCorrect.classList.add('btn-undo'); DOM.btnCorrect.classList.remove('btn-correct');
+            btnCorrect.textContent = `❌ 정답 취소 (${currentCard.correctCount}/5)`;
+            btnCorrect.classList.add('btn-undo'); btnCorrect.classList.remove('btn-correct');
           } else {
-            DOM.btnCorrect.textContent = `✔ 정답 (${currentCard.correctCount}/5)`;
-            DOM.btnCorrect.classList.add('btn-correct'); DOM.btnCorrect.classList.remove('btn-undo');
+            btnCorrect.textContent = `✔ 정답 (${currentCard.correctCount}/5)`;
+            btnCorrect.classList.add('btn-correct'); btnCorrect.classList.remove('btn-undo');
           }
       }
       
       const total = shuffledDeck.length;
       const currentNum = currentIndex + 1;
-      DOM.progressText.textContent = `${currentNum} / ${total}`;
-      DOM.progressBarFill.style.width = `${(currentNum / total) * 100}%`;
+      progressText.textContent = `${currentNum} / ${total}`;
+      progressBarFill.style.width = `${(currentNum / total) * 100}%`;
 
-      DOM.btnPrev.disabled = (currentIndex === 0);
+      btnPrev.disabled = (currentIndex === 0);
 
     }, 150);
   }
 
+  // 💡 카드 배경 클릭 시 빈칸을 먼저 순서대로 여는 로직
   function flipCard() {
-    DOM.hintToast.classList.remove('show'); 
+    document.getElementById('hint-toast').classList.remove('show'); 
     
     let currentCard = shuffledDeck.length > 0 ? shuffledDeck[currentIndex] : null;
     if (!currentCard || currentCard.isHidden) return;
 
     let isCloze = currentCard.type.startsWith('cloze');
 
-    if (isCloze && !DOM.card.classList.contains('flipped')) {
+    // 스마트 빈칸인 경우, 카드를 바로 뒤집지 않고 닫혀있는 빈칸을 순서대로 찾아서 염
+    if (isCloze && !card.classList.contains('flipped')) {
       const unrevealed = document.querySelectorAll('#front-display .inline-cloze:not(.revealed)');
       if (unrevealed.length > 0) {
-        unrevealed[0].classList.add('revealed'); 
+        unrevealed[0].classList.add('revealed'); // 첫 번째 숨겨진 빈칸 열기
+        
+        // 방금 연 빈칸이 마지막 빈칸이었다면 정답 버튼 활성화!
         if (unrevealed.length === 1 && !currentCard.isCorrectInCurrentCycle) {
-          DOM.btnCorrect.disabled = false;
+          btnCorrect.disabled = false;
         }
-        return; 
+        return; // 빈칸을 열었으므로 카드는 뒤집지 않고 종료
       }
     }
 
-    DOM.card.classList.toggle('flipped');
+    // 일반 카드이거나, 빈칸이 이미 모두 다 열린 상태라면 그제야 카드를 뒤집음
+    card.classList.toggle('flipped');
     
-    if (DOM.card.classList.contains('flipped')) {
-      if (!currentCard.isCorrectInCurrentCycle) DOM.btnCorrect.disabled = false;
+    if (card.classList.contains('flipped')) {
+      if (!currentCard.isCorrectInCurrentCycle) btnCorrect.disabled = false;
     } else {
+      // 다시 앞면으로 돌아올 때 (일반 카드) 정답 버튼 상태 잠금
       if (!isCloze && !currentCard.isCorrectInCurrentCycle) {
-        DOM.btnCorrect.disabled = true;
+        btnCorrect.disabled = true;
       }
     }
   }
@@ -956,11 +963,11 @@
       else if (c.type === 'cloze-b') isMastered = c.correctCountB >= 5;
 
       if (isMastered) {
-        DOM.cardContainer.classList.add('fly-away');
+        cardContainer.classList.add('fly-away');
         c.masteredAtCycle = deckCycleCount;
         
         setTimeout(() => {
-          DOM.cardContainer.classList.remove('fly-away');
+          cardContainer.classList.remove('fly-away');
           if (!masteredCards.includes(c)) {
             activeCards = activeCards.filter(item => item !== c);
             masteredCards.push(c);
@@ -993,29 +1000,37 @@
     currentMode = mode;
     currentEditTarget = target || (shuffledDeck.length > 0 ? shuffledDeck[currentIndex] : null);
 
+    const modalTitle = document.getElementById('modal-title');
+    const submitBtn = document.getElementById('modal-submit-btn');
+    const deleteBtn = document.getElementById('modal-delete-btn');
+    const nameInput = document.getElementById('new-name');
+    const hintInput = document.getElementById('new-hint');
+    const contentInput = document.getElementById('new-content');
+    const hiddenCheckbox = document.getElementById('new-hidden');
+
     if (mode === 'edit' && currentEditTarget) {
-      DOM.modalTitle.textContent = "✏️ 문장 편집하기";
-      DOM.modalSubmitBtn.textContent = "저장하기"; DOM.modalDeleteBtn.style.display = 'block';
-      DOM.newName.value = currentEditTarget.name;
-      DOM.newHint.value = currentEditTarget.hint || "";
-      DOM.newContent.value = currentEditTarget.content;
-      DOM.newHidden.checked = currentEditTarget.isHidden || false;
+      modalTitle.textContent = "✏️ 문장 편집하기";
+      submitBtn.textContent = "저장하기"; deleteBtn.style.display = 'block';
+      nameInput.value = currentEditTarget.name;
+      hintInput.value = currentEditTarget.hint || "";
+      contentInput.value = currentEditTarget.content;
+      hiddenCheckbox.checked = currentEditTarget.isHidden || false;
     } else {
-      DOM.modalTitle.textContent = "새 문장 추가하기";
-      DOM.modalSubmitBtn.textContent = "추가하기"; DOM.modalDeleteBtn.style.display = 'none';
-      DOM.newName.value = ""; DOM.newHint.value = ""; DOM.newContent.value = "";
-      DOM.newHidden.checked = false;
+      modalTitle.textContent = "새 문장 추가하기";
+      submitBtn.textContent = "추가하기"; deleteBtn.style.display = 'none';
+      nameInput.value = ""; hintInput.value = ""; contentInput.value = "";
+      hiddenCheckbox.checked = false;
     }
-    DOM.formModal.style.display = 'flex';
+    document.getElementById('form-modal').style.display = 'flex';
   }
 
-  function closeFormModal() { DOM.formModal.style.display = 'none'; }
+  function closeFormModal() { document.getElementById('form-modal').style.display = 'none'; }
 
   function submitCard() {
-    const name = DOM.newName.value.trim();
-    const hint = DOM.newHint.value.trim();
-    const content = DOM.newContent.value.trim();
-    const isHidden = DOM.newHidden.checked;
+    const name = document.getElementById('new-name').value.trim();
+    const hint = document.getElementById('new-hint').value.trim();
+    const content = document.getElementById('new-content').value.trim();
+    const isHidden = document.getElementById('new-hidden').checked;
 
     if (name === "") { alert("문제를 입력해 줘!"); return; }
 
@@ -1048,9 +1063,9 @@
       }
     }
     saveData(); closeFormModal(); updateUI();
-    if (DOM.allListModal.style.display === 'flex') filterAllList();
-    if (DOM.masteredModal.style.display === 'flex') openMasteredModal();
-    if (DOM.viewModal.style.display === 'flex') viewAnyCard(currentEditTarget);
+    if (document.getElementById('all-list-modal').style.display === 'flex') filterAllList();
+    if (document.getElementById('mastered-modal').style.display === 'flex') openMasteredModal();
+    if (document.getElementById('view-modal').style.display === 'flex') viewAnyCard(currentEditTarget);
   }
 
   function deleteCard() {
@@ -1067,48 +1082,53 @@
     }
     if (shuffledDeck.length === 0 && activeCards.filter(c => !c.isHidden).length > 0) resetDeck();
     saveData(); closeFormModal(); updateUI();
-    if (DOM.allListModal.style.display === 'flex') filterAllList();
-    if (DOM.masteredModal.style.display === 'flex') openMasteredModal();
+    if (document.getElementById('all-list-modal').style.display === 'flex') filterAllList();
+    if (document.getElementById('mastered-modal').style.display === 'flex') openMasteredModal();
     closeViewModal();
   }
 
   function openMasteredModal() {
-    DOM.masteredList.innerHTML = '';
+    const listContainer = document.getElementById('mastered-list');
+    listContainer.innerHTML = '';
     if (masteredCards.length === 0) {
-      DOM.masteredList.innerHTML = '<p class="empty-msg">아직 마스터한 문장이 없어.</p>';
+      listContainer.innerHTML = '<p style="text-align:center; color:#7f8c8d; margin-top:20px;">아직 마스터한 문장이 없어.</p>';
     } else {
       const sortedMastered = [...masteredCards].sort((a, b) => a.name.localeCompare(b.name));
       sortedMastered.forEach((f) => {
         const item = document.createElement('div');
         item.className = 'mastered-item'; item.onclick = () => viewAnyCard(f);
         const cyclesLeft = 5 - (deckCycleCount - f.masteredAtCycle);
-        const hiddenTag = f.isHidden ? `<span class="tag-hidden">숨김</span>` : "";
-        const textClass = f.isHidden ? "class='text-hidden'" : "";
-        item.innerHTML = `<span><span ${textClass}>${f.name.substring(0, 15)}...</span>${hiddenTag}</span> <span style="font-size:12px; font-weight:normal;">복습까지 ${cyclesLeft}턴 남음</span>`;
-        DOM.masteredList.appendChild(item);
+        const hiddenTag = f.isHidden ? `<span style="background:#bdc3c7; color:white; font-size:10px; padding:2px 5px; border-radius:4px; margin-left:5px;">숨김</span>` : "";
+        const textStyle = f.isHidden ? "color:#bdc3c7; text-decoration:line-through;" : "";
+        item.innerHTML = `<span><span style="${textStyle}">${f.name.substring(0, 15)}...</span>${hiddenTag}</span> <span style="font-size:12px; font-weight:normal;">복습까지 ${cyclesLeft}턴 남음</span>`;
+        listContainer.appendChild(item);
       });
     }
-    DOM.masteredModal.style.display = 'flex';
+    document.getElementById('mastered-modal').style.display = 'flex';
   }
-  function closeMasteredModal() { DOM.masteredModal.style.display = 'none'; }
+  function closeMasteredModal() { document.getElementById('mastered-modal').style.display = 'none'; }
 
   function openAllListModal() {
-    DOM.searchInput.value = '';
+    document.getElementById('search-input').value = '';
     renderAllList();
-    DOM.allListModal.style.display = 'flex';
+    document.getElementById('all-list-modal').style.display = 'flex';
   }
 
-  function closeAllListModal() { DOM.allListModal.style.display = 'none'; }
+  function closeAllListModal() { document.getElementById('all-list-modal').style.display = 'none'; }
 
   function filterAllList() {
-    renderAllList(DOM.searchInput.value);
+    const query = document.getElementById('search-input').value;
+    renderAllList(query);
   }
 
   function renderAllList(searchQuery = "") {
-    DOM.allList.innerHTML = '';
+    const listContainer = document.getElementById('all-list');
+    listContainer.innerHTML = '';
+    
     let allCards = [...activeCards, ...masteredCards];
     allCards.sort((a, b) => a.name.localeCompare(b.name));
-    DOM.allCount.textContent = allCards.length;
+
+    document.getElementById('all-count').textContent = allCards.length;
 
     if (searchQuery.trim() !== "") {
       const lowerQuery = searchQuery.toLowerCase();
@@ -1119,7 +1139,7 @@
     }
     
     if (allCards.length === 0) {
-      DOM.allList.innerHTML = '<p class="empty-msg">등록된 카드가 없거나 검색 결과가 없어!</p>';
+      listContainer.innerHTML = '<p style="text-align:center; color:#7f8c8d; margin-top:20px;">등록된 카드가 없거나 검색 결과가 없어!</p>';
     } else {
       allCards.forEach(f => {
         const item = document.createElement('div');
@@ -1133,31 +1153,31 @@
             else statusText += ` (B:${f.correctCountB}/5)`;
         }
 
-        const hiddenTag = f.isHidden ? `<span class="tag-hidden">숨김</span>` : "";
-        const textClass = f.isHidden ? "class='text-hidden'" : "";
-        item.innerHTML = `<span><span ${textClass}>${f.name.substring(0, 15)}...</span>${hiddenTag}</span> <span style="font-size:12px; font-weight:normal; color:#7f8c8d;">${statusText}</span>`;
-        DOM.allList.appendChild(item);
+        const hiddenTag = f.isHidden ? `<span style="background:#bdc3c7; color:white; font-size:10px; padding:2px 5px; border-radius:4px; margin-left:5px;">숨김</span>` : "";
+        const textStyle = f.isHidden ? "color:#bdc3c7; text-decoration:line-through;" : "";
+        item.innerHTML = `<span><span style="${textStyle}">${f.name.substring(0, 15)}...</span>${hiddenTag}</span> <span style="font-size:12px; font-weight:normal; color:#7f8c8d;">${statusText}</span>`;
+        listContainer.appendChild(item);
       });
     }
   }
 
   function viewAnyCard(cardObj) {
     currentViewTarget = cardObj;
-    DOM.viewName.innerHTML = formatText(cardObj.name).formatted;
-    DOM.viewContent.innerHTML = formatText(cardObj.content || "없음").formatted;
+    document.getElementById('view-name').innerHTML = formatText(cardObj.name).formatted;
+    document.getElementById('view-content').innerHTML = formatText(cardObj.content || "없음").formatted;
     
+    const viewHint = document.getElementById('view-hint');
     if (cardObj.hint && cardObj.hint.trim() !== "") {
-      DOM.viewHint.innerText = "💡 힌트: " + cardObj.hint; DOM.viewHint.style.display = 'block';
-    } else DOM.viewHint.style.display = 'none';
+      viewHint.innerText = "💡 힌트: " + cardObj.hint; viewHint.style.display = 'block';
+    } else viewHint.style.display = 'none';
     
+    const viewHideBtn = document.getElementById('view-btn-hide');
     if (cardObj.isHidden) {
-      DOM.viewBtnHide.textContent = "👀 숨김 해제"; 
-      DOM.viewBtnHide.classList.add('btn-hide-active');
+      viewHideBtn.textContent = "👀 숨김 해제"; viewHideBtn.style.color = "#e74c3c"; viewHideBtn.style.borderColor = "#e74c3c"; viewHideBtn.style.backgroundColor = "#fdf2f1";
     } else {
-      DOM.viewBtnHide.textContent = "🫥 숨김"; 
-      DOM.viewBtnHide.classList.remove('btn-hide-active');
+      viewHideBtn.textContent = "🫥 숨김"; viewHideBtn.style.color = "#7f8c8d"; viewHideBtn.style.borderColor = "#bdc3c7"; viewHideBtn.style.backgroundColor = "white";
     }
-    DOM.viewModal.style.display = 'flex';
+    document.getElementById('view-modal').style.display = 'flex';
   }
 
   function toggleHideViewed() {
@@ -1165,29 +1185,27 @@
     currentViewTarget.isHidden = !currentViewTarget.isHidden;
     saveData();
     
+    const viewHideBtn = document.getElementById('view-btn-hide');
     if (currentViewTarget.isHidden) {
-      DOM.viewBtnHide.textContent = "👀 숨김 해제"; 
-      DOM.viewBtnHide.classList.add('btn-hide-active');
+      viewHideBtn.textContent = "👀 숨김 해제"; viewHideBtn.style.color = "#e74c3c"; viewHideBtn.style.borderColor = "#e74c3c"; viewHideBtn.style.backgroundColor = "#fdf2f1";
       const idx = shuffledDeck.indexOf(currentViewTarget);
       if (idx > -1) {
           shuffledDeck.splice(idx, 1);
           if (currentIndex >= shuffledDeck.length && shuffledDeck.length > 0) currentIndex--;
       }
     } else {
-      DOM.viewBtnHide.textContent = "🫥 숨김"; 
-      DOM.viewBtnHide.classList.remove('btn-hide-active');
+      viewHideBtn.textContent = "🫥 숨김"; viewHideBtn.style.color = "#7f8c8d"; viewHideBtn.style.borderColor = "#bdc3c7"; viewHideBtn.style.backgroundColor = "white";
     }
 
     if (shuffledDeck.length === 0 && !currentViewTarget.isHidden) resetDeck();
     else {
-       if (shuffledDeck.length > 0 && shuffledDeck[currentIndex] === currentViewTarget) updateUI(DOM.card.classList.contains('flipped'));
+       if (shuffledDeck.length > 0 && shuffledDeck[currentIndex] === currentViewTarget) updateUI(card.classList.contains('flipped'));
        else updateUI();
     }
-    if (DOM.allListModal.style.display === 'flex') filterAllList();
-    if (DOM.masteredModal.style.display === 'flex') openMasteredModal();
+    if (document.getElementById('all-list-modal').style.display === 'flex') filterAllList();
+    if (document.getElementById('mastered-modal').style.display === 'flex') openMasteredModal();
   }
-  
-  function closeViewModal() { DOM.viewModal.style.display = 'none'; }
+  function closeViewModal() { document.getElementById('view-modal').style.display = 'none'; }
   function editViewedCard() { openFormModal('edit', currentViewTarget); }
 
   loadSavedData();
