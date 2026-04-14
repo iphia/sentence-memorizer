@@ -164,7 +164,6 @@
     text-align: center;
   }
 
-  /* 💡 앞면에서 빈칸을 터치해서 여는 스타일 */
   .inline-cloze {
     display: inline-block;
     background-color: #f1f2f6;
@@ -172,13 +171,11 @@
     border-radius: 8px;
     padding: 2px 10px;
     margin: 2px 4px;
-    cursor: pointer;
     transition: all 0.2s ease;
     font-size: 0.9em;
     vertical-align: middle;
     word-break: keep-all;
   }
-  .inline-cloze:active { transform: scale(0.95); }
   .inline-cloze-a.revealed { border-color: #e74c3c; background-color: #fdf2f1; color: #e74c3c; border-style: solid; }
   .inline-cloze-b.revealed { border-color: #3498db; background-color: #ebf5fb; color: #3498db; border-style: solid; }
   .inline-cloze .cloze-real { display: none; }
@@ -471,7 +468,7 @@
     textarea.selectionEnd = end + open.length;
   }
 
-  // 💡 스마트 빈칸을 앞면에서 터치해 열도록 변경
+  // 💡 onclick 속성 제거 (클릭 이벤트는 카드가 전체적으로 담당)
   function formatText(text, isCloze = false, mode = null) {
     if (!text) return { formatted: "", answers: [] };
     let safeText = text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -481,13 +478,13 @@
       if (mode === 'A') {
         safeText = safeText.replace(/\[\[(.*?)\]\]/g, (m, p1) => { 
             answers.push(p1); 
-            return `<span class="inline-cloze inline-cloze-a" onclick="event.stopPropagation(); this.classList.add('revealed')"><span class="cloze-placeholder">👀 터치</span><span class="cloze-real">${p1}</span></span>`; 
+            return `<span class="inline-cloze inline-cloze-a"><span class="cloze-placeholder">👀 터치</span><span class="cloze-real">${p1}</span></span>`; 
         });
         safeText = safeText.replace(/\{\{(.*?)\}\}/g, "$1");
       } else if (mode === 'B') {
         safeText = safeText.replace(/\{\{(.*?)\}\}/g, (m, p1) => { 
             answers.push(p1); 
-            return `<span class="inline-cloze inline-cloze-b" onclick="event.stopPropagation(); this.classList.add('revealed')"><span class="cloze-placeholder">👀 터치</span><span class="cloze-real">${p1}</span></span>`; 
+            return `<span class="inline-cloze inline-cloze-b"><span class="cloze-placeholder">👀 터치</span><span class="cloze-real">${p1}</span></span>`; 
         });
         safeText = safeText.replace(/\[\[(.*?)\]\]/g, "$1");
       }
@@ -658,12 +655,11 @@
   
   cardContainer.addEventListener('click', (e) => {
     if (e.target.id === 'btn-hint') return;
-    // 빈칸을 클릭했을 때는 카드가 뒤집히지 않게 (event.stopPropagation 적용됨)
     if (!isLongPress) flipCard();
   });
 
   function startPress(e) {
-    if (e.target.id === 'btn-hint' || e.target.closest('.inline-cloze')) return;
+    if (e.target.id === 'btn-hint') return;
     if (shuffledDeck.length === 0) return;
     isLongPress = false;
     let clientX = e.touches ? e.touches[0].clientX : e.clientX;
@@ -831,21 +827,22 @@
 
       btnHint.style.display = (currentCard.hint && currentCard.hint.trim() !== "") ? 'block' : 'none';
 
-      // 💡 버튼 잠금 해제 로직 (스마트 빈칸 카드는 뒤집지 않아도 바로 활성화됨)
-      let isFlipped = card.classList.contains('flipped');
-      let isCloze = currentCard.type.startsWith('cloze');
-
+      // 💡 버튼 잠금 및 활성화 로직
       if (currentCard.isHidden) {
         cardContainer.classList.add('card-hidden-anim');
         btnHide.textContent = "👀 취소"; btnHide.style.color = "#e74c3c"; btnHide.style.borderColor = "#e74c3c"; btnHide.style.backgroundColor = "#fdf2f1";
         btnCorrect.disabled = true; 
-        btnNext.disabled = false;
+        btnNext.disabled = false; // 뒤집지 않아도 항상 넘길 수 있음
       } else {
         cardContainer.classList.remove('card-hidden-anim');
         btnHide.textContent = "🫥 숨김"; btnHide.style.color = "#7f8c8d"; btnHide.style.borderColor = "#bdc3c7"; btnHide.style.backgroundColor = "white";
         
-        btnCorrect.disabled = !(isFlipped || isCloze);
-        btnNext.disabled = !(isFlipped || isCloze);
+        if (keepFlipped || card.classList.contains('flipped') || currentCard.isCorrectInCurrentCycle) {
+            btnCorrect.disabled = false;
+        } else {
+            btnCorrect.disabled = true; // 앞면에서는 기본적으로 비활성화
+        }
+        btnNext.disabled = false; // 뒤집지 않아도 항상 넘길 수 있음
       }
 
       if (currentCard.type.startsWith('cloze')) {
@@ -880,20 +877,39 @@
     }, 150);
   }
 
+  // 💡 카드 클릭 시 빈칸을 먼저 순서대로 여는 로직
   function flipCard() {
     document.getElementById('hint-toast').classList.remove('show'); 
-    card.classList.toggle('flipped');
     
     let currentCard = shuffledDeck.length > 0 ? shuffledDeck[currentIndex] : null;
     if (!currentCard || currentCard.isHidden) return;
 
     let isCloze = currentCard.type.startsWith('cloze');
-    if (card.classList.contains('flipped') || isCloze) {
-      btnCorrect.disabled = false;
-      btnNext.disabled = false;
+
+    // 스마트 빈칸인 경우, 카드를 바로 뒤집지 않고 빈칸을 하나씩 순서대로 엽니다.
+    if (isCloze && !card.classList.contains('flipped')) {
+      const unrevealed = document.querySelectorAll('#front-display .inline-cloze:not(.revealed)');
+      if (unrevealed.length > 0) {
+        unrevealed[0].classList.add('revealed'); // 첫 번째 숨겨진 빈칸 열기
+        
+        // 방금 연 빈칸이 마지막 빈칸이었다면 정답 버튼 활성화!
+        if (unrevealed.length === 1 && !currentCard.isCorrectInCurrentCycle) {
+          btnCorrect.disabled = false;
+        }
+        return; // 빈칸을 열었으므로 카드는 뒤집지 않고 종료
+      }
+    }
+
+    // 빈칸이 없거나, 모두 다 열린 상태라면 그제야 카드를 뒤집습니다.
+    card.classList.toggle('flipped');
+    
+    if (card.classList.contains('flipped')) {
+      if (!currentCard.isCorrectInCurrentCycle) btnCorrect.disabled = false;
     } else {
-      btnCorrect.disabled = true;
-      btnNext.disabled = true;
+      // 다시 앞면으로 돌아올 때 정답 버튼 상태 유지 (빈칸 카드가 아니면 비활성화)
+      if (!isCloze && !currentCard.isCorrectInCurrentCycle) {
+        btnCorrect.disabled = true;
+      }
     }
   }
 
