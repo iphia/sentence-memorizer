@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>문장 암기장</title>
+<meta name="theme-color" content="#f4f7f6"> <title>문장 암기장</title>
 
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📖</text></svg>">
 
@@ -18,8 +18,10 @@
 <link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700;800&display=swap" rel="stylesheet">
 
 <style>
-  body, button, input, textarea {
+  /* 모바일 터치 딜레이 방지 최적화 */
+  body, button, input, textarea, .card {
     font-family: 'Nanum Gothic', sans-serif;
+    touch-action: manipulation; 
   }
 
   body {
@@ -488,7 +490,7 @@
   let shuffledDeck = [];
   let currentIndex = 0;
   let currentDeckTag = ""; 
-  let deckOrder = []; // 덱 순서를 저장하는 배열
+  let deckOrder = []; 
 
   let currentEditTarget = null;
   let currentViewTarget = null;
@@ -507,14 +509,11 @@
   const btnNext = document.getElementById('btn-next');
   const btnHide = document.getElementById('btn-hide');
 
-  // 유효한 전체 태그 가져오기 및 순서 배열 최신화
   function getAvailableDecks() {
     let allTags = [...new Set([...activeCards, ...masteredCards].map(c => c.tag || ""))];
     if(allTags.length === 0) allTags = [""];
     
-    // 기존 순서에 있는 것들 먼저 정렬
     let ordered = deckOrder.filter(t => allTags.includes(t));
-    // 새로 추가된 태그들 뒤에 붙이기
     let newTags = allTags.filter(t => !ordered.includes(t)).sort();
     
     deckOrder = [...ordered, ...newTags];
@@ -526,7 +525,6 @@
     document.getElementById('deck-title-badge').innerText = `[${titleName}]`;
   }
 
-  // 덱 네비게이션 함수 (이전/다음)
   function prevDeck() {
     let decks = getAvailableDecks();
     if(decks.length <= 1) return;
@@ -552,7 +550,6 @@
     updateUI();
   }
 
-  // 덱 순서 변경 함수 (위/아래)
   function moveDeckUp(tag, event) {
     event.stopPropagation();
     let idx = deckOrder.indexOf(tag);
@@ -646,9 +643,7 @@
           result.push('<table class="flashcard-table">');
           inTable = true;
         }
-        if (line.match(/^\|(?:-+|:-+:?|-+:|:-+)(\|(?:-+|:-+:?|-+:|:-+))*\|$/)) {
-          continue; 
-        }
+        if (line.match(/^\|(?:-+|:-+:?|-+:|:-+)(\|(?:-+|:-+:?|-+:|:-+))*\|$/)) continue; 
         
         let cells = line.split('|').slice(1, -1);
         let isHeader = (i + 1 < lines.length && lines[i+1].trim().match(/^\|(?:-+|:-+:?|-+:|:-+)(\|(?:-+|:-+:?|-+:|:-+))*\|$/));
@@ -726,9 +721,15 @@
     }
   });
 
+  /* 에러 방지 데이터 저장 로직 추가 */
   function saveData() {
     const data = { activeCards, masteredCards, deckCycleCount, shuffledDeck, currentIndex, currentDeckTag, deckOrder };
-    localStorage.setItem('sentenceApp_data', JSON.stringify(data));
+    try {
+      localStorage.setItem('sentenceApp_data', JSON.stringify(data));
+    } catch (e) {
+      console.error("데이터 저장 실패:", e);
+      alert("⚠️ 저장 공간이 부족하거나 오류가 발생해서 데이터를 저장하지 못했어!");
+    }
   }
 
   function loadSavedData() {
@@ -742,7 +743,7 @@
         activeCards = data.activeCards.map(upgradeCardData);
         masteredCards = data.masteredCards.map(upgradeCardData) || [];
         
-        getAvailableDecks(); // Sync deckOrder with actual data
+        getAvailableDecks();
 
         if (data.shuffledDeck && data.shuffledDeck.length > 0) {
           shuffledDeck = data.shuffledDeck.map(savedCard =>
@@ -938,6 +939,7 @@
       card.classList.remove('flipped');
     }
     
+    /* 딜레이를 150ms에서 100ms로 줄여서 체감 속도 향상 */
     setTimeout(() => {
       const btnHint = document.getElementById('btn-hint');
 
@@ -1036,7 +1038,7 @@
 
       btnPrev.disabled = (currentIndex === 0);
 
-    }, 150);
+    }, 100);
   }
 
   function flipCard() {
@@ -1207,7 +1209,7 @@
       }
     }
     
-    getAvailableDecks(); // 새 태그가 생겼을 수 있으니 태그 업데이트
+    getAvailableDecks(); 
     saveData(); closeFormModal(); updateUI();
     if (document.getElementById('all-list-modal').style.display === 'flex') filterAllList();
     if (document.getElementById('mastered-modal').style.display === 'flex') openMasteredModal();
@@ -1227,7 +1229,7 @@
       }
     }
     
-    getAvailableDecks(); // 덱이 비었을 수 있으니 업데이트
+    getAvailableDecks();
     if (shuffledDeck.length === 0 && activeCards.filter(c => !c.isHidden && c.tag === currentDeckTag).length > 0) resetDeck();
     saveData(); closeFormModal(); updateUI();
     if (document.getElementById('all-list-modal').style.display === 'flex') filterAllList();
@@ -1235,7 +1237,6 @@
     closeViewModal();
   }
 
-  // 태그 관련 함수
   function openDeckModal() {
     const listContainer = document.getElementById('deck-list');
     listContainer.innerHTML = '';
@@ -1263,7 +1264,6 @@
           </div>
         `;
         
-        // 맨 위/맨 아래 버튼 숨기기 처리
         let btnUp = item.querySelector('.deck-order-btns button:first-child');
         let btnDown = item.querySelector('.deck-order-btns button:last-child');
         if (index === 0) btnUp.style.visibility = 'hidden';
