@@ -18,7 +18,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700;800&display=swap" rel="stylesheet">
 
 <style>
-  /* 모바일 터치 잔상(번쩍임) 완벽 제거 */
   * {
     -webkit-tap-highlight-color: transparent;
   }
@@ -258,22 +257,19 @@
   .progress-bar-bg { width: 100%; height: 6px; background-color: #e0e0e0; border-radius: 3px; overflow: hidden; margin-top: 8px; }
   .progress-bar-fill { height: 100%; background-color: #2ecc71; width: 0%; transition: width 0.3s ease; }
   
-  /* --------------------------------------------------- */
-  /* 컨트롤 버튼 크기 및 세로 길이(높이) 완전 고정 완벽 정렬 */
-  /* --------------------------------------------------- */
   .controls { display: flex; gap: 10px; margin-bottom: 20px; align-items: center; justify-content: center; width: 340px; }
   .btn-nav {
-    height: 50px; /* 세로 높이를 50px로 완전히 고정 */
+    height: 50px;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 0; /* 패딩을 없애고 flex로 정중앙 정렬 */
+    padding: 0;
     font-size: 15px; font-weight: bold; border: none; border-radius: 12px; background-color: #34495e; color: white; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: center; box-sizing: border-box;
   }
   .btn-nav:hover { background-color: #2c3e50; }
   
   #btn-prev, #btn-next { width: 60px; flex: none; }
-  #btn-correct { width: 190px; flex: none; } /* 가로 폭 고정 */
+  #btn-correct { width: 190px; flex: none; }
   
   .btn-correct { background-color: #27ae60; }
   .btn-correct:hover { background-color: #219653; }
@@ -500,6 +496,7 @@
   let currentIndex = 0;
   let currentDeckTag = ""; 
   let deckOrder = []; 
+  let lastUsedTag = null; 
 
   let currentEditTarget = null;
   let currentViewTarget = null;
@@ -682,7 +679,6 @@
     card.isHidden = card.isHidden || false;
     card.isCorrectInCurrentCycle = card.isCorrectInCurrentCycle || false;
 
-    // 예전 데이터 정리
     card.correctCount = card.correctCount !== undefined ? card.correctCount : 0;
     if (card.correctCountA !== undefined || card.correctCountB !== undefined) {
         card.correctCount = Math.max(card.correctCountA || 0, card.correctCountB || 0);
@@ -870,7 +866,6 @@
     deckCycles[currentDeckTag]++;
     let currentCycle = deckCycles[currentDeckTag];
     
-    // 오직 마스터된 카드만 5사이클 경과 시 점수를 4로 깎아서 액티브 덱으로 돌려보냄
     for (let i = masteredCards.length - 1; i >= 0; i--) {
       let mCard = masteredCards[i];
       if (mCard.tag === currentDeckTag && !mCard.isHidden && (currentCycle - mCard.masteredAtCycle >= 5)) {
@@ -881,7 +876,6 @@
       }
     }
     
-    // 액티브 카드는 상태 초기화만 하고 점수는 절대 깎지 않음
     activeCards.forEach(c => {
       if (c.tag === currentDeckTag) {
         c.isCorrectInCurrentCycle = false; 
@@ -891,7 +885,6 @@
     let availableActive = activeCards.filter(c => !c.isHidden && c.tag === currentDeckTag);
     let availableMaster = masteredCards.filter(c => !c.isHidden && c.tag === currentDeckTag);
 
-    // 덱이 텅 비었을 때 시간을 앞당겨서 학습할 카드를 끌어오는 로직
     if (availableActive.length === 0 && availableMaster.length > 0) {
       let minCycles = 5;
       availableMaster.forEach(f => {
@@ -975,7 +968,6 @@
         btnNext.disabled = false;
       }
 
-      // 타입 상관없이 똑같이 점수 보여주기
       if (currentCard.isCorrectInCurrentCycle) {
         btnCorrect.textContent = `❌ 정답 취소 (${currentCard.correctCount}/5)`;
         btnCorrect.classList.add('btn-undo'); btnCorrect.classList.remove('btn-correct');
@@ -1036,7 +1028,6 @@
     if (shuffledDeck.length === 0) return;
     let c = shuffledDeck[currentIndex];
 
-    // 꼼수 방지 (같은 사이클에서 정답 여러 번 누르는 것 방지)
     if (c.isCorrectInCurrentCycle) { 
       c.isCorrectInCurrentCycle = false;
       c.correctCount -= 1;
@@ -1109,7 +1100,7 @@
       submitBtn.textContent = "추가하기"; deleteBtn.style.display = 'none';
       nameInput.value = ""; hintInput.value = ""; contentInput.value = "";
       hiddenCheckbox.checked = false;
-      tagInput.value = currentDeckTag; 
+      tagInput.value = lastUsedTag !== null ? lastUsedTag : currentDeckTag; 
     }
     document.getElementById('form-modal').style.display = 'flex';
   }
@@ -1122,6 +1113,8 @@
     const content = document.getElementById('new-content').value.trim();
     const tag = document.getElementById('new-tag').value.trim();
     const isHidden = document.getElementById('new-hidden').checked;
+
+    lastUsedTag = tag; 
 
     if (name === "") { alert("문제를 입력해 줘!"); return; }
 
