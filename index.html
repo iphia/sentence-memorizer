@@ -490,6 +490,7 @@
 
 <script>
   let deckCycles = {}; 
+  let deckStates = {};
   let activeCards = [];
   let masteredCards = [];
   let shuffledDeck = [];
@@ -546,11 +547,29 @@
     switchDeck(nextTag);
   }
 
-  function switchDeck(tag) {
+function switchDeck(tag) {
+    if (currentDeckTag !== undefined && shuffledDeck.length > 0) {
+      deckStates[currentDeckTag] = {
+        deck: [...shuffledDeck],
+        index: currentIndex
+      };
+    }
+
     currentDeckTag = tag;
-    shuffledDeck = [];
-    saveData();
     updateMainTitle();
+
+    if (deckStates[currentDeckTag] && deckStates[currentDeckTag].deck.length > 0) {
+      shuffledDeck = deckStates[currentDeckTag].deck.filter(c => c.tag === currentDeckTag && !c.isHidden);
+      
+      if (shuffledDeck.length > 0) {
+        currentIndex = Math.min(deckStates[currentDeckTag].index, shuffledDeck.length - 1);
+        saveData();
+        updateUI();
+        return; 
+      }
+    }
+
+    shuffledDeck = [];
     resetDeck();
     updateUI();
   }
@@ -709,7 +728,7 @@
   });
 
   function saveData() {
-    const data = { activeCards, masteredCards, deckCycles, shuffledDeck, currentIndex, currentDeckTag, deckOrder };
+    const data = { activeCards, masteredCards, deckCycles, shuffledDeck, currentIndex, currentDeckTag, deckOrder, deckStates };
     try {
       localStorage.setItem('sentenceApp_data', JSON.stringify(data));
     } catch (e) {
@@ -736,6 +755,16 @@
         
         getAvailableDecks();
 
+        deckStates = data.deckStates || {};
+        for (let tag in deckStates) {
+          if (deckStates[tag] && deckStates[tag].deck) {
+            // 저장된 상태 안의 카드들을 실제 카드의 참조값으로 연결해 줘 (삭제된 카드는 자동으로 걸러짐)
+            deckStates[tag].deck = deckStates[tag].deck.map(savedCard =>
+              activeCards.find(f => f.name === savedCard.name) || masteredCards.find(f => f.name === savedCard.name)
+            ).filter(Boolean);
+          }
+        }
+
         if (data.shuffledDeck && data.shuffledDeck.length > 0) {
           shuffledDeck = data.shuffledDeck.map(savedCard =>
             activeCards.find(f => f.name === savedCard.name) || masteredCards.find(f => f.name === savedCard.name)
@@ -750,7 +779,9 @@
   }
 
   function initDefaultData() {
-    activeCards = []; masteredCards = []; deckCycles = {}; shuffledDeck = []; currentIndex = 0; currentDeckTag = ""; deckOrder = [""];
+    activeCards = []; masteredCards = []; deckCycles = {}; 
+    deckStates = {}; 
+    shuffledDeck = []; currentIndex = 0; currentDeckTag = ""; deckOrder = [""];
   }
 
   function downloadBackup() {
