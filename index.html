@@ -476,12 +476,20 @@
 </div>
 
 <div class="modal-overlay" id="view-modal">
-  <div class="modal-content" style="align-items: center;">
-    <h2 id="view-name" style="color: #2c3e50; text-align: left; white-space: pre-wrap; word-break: break-word; font-size: 16px; width: 100%; line-height: 1.5;">문제</h2>
-    <div id="view-hint" style="color: #e67e22; font-size: 14px; font-weight: bold; width: 100%; text-align: left; display: none;">💡 힌트: </div>
-    <hr style="width: 100%; border: 0; border-top: 1px dashed #ccc; margin: 15px 0;">
-    <div id="view-content" style="margin-bottom: 20px; font-size: 16px; color: #333333; text-align: left; white-space: pre-wrap; word-break: break-word; width: 100%; line-height: 1.5;">정답 내용</div>
-    <div class="modal-buttons" style="width: 100%;">
+  <div class="modal-content" style="align-items: center; background: transparent; box-shadow: none;">
+    <div class="card-container" style="margin-bottom: 0px;">
+      <div class="card" id="view-flashcard" onclick="flipViewCard()">
+        <div class="card-face card-front" style="background-color: #ffffff;">
+          <div id="view-front-display" style="width: 100%; display: inline-block; white-space: pre-wrap; word-break: break-word; font-size: 17px; font-weight: bold; line-height: 1.6; text-align: left; margin: auto 0;">..</div>
+          <button class="btn-hint" id="view-btn-hint" onclick="showViewHint(event)" style="display: none;">💡</button>
+          <div class="hint-toast" id="view-hint-toast"></div>
+        </div>
+        <div class="card-face card-back" style="background-color: #eafaf1; transform: rotateY(180deg);">
+          <div id="view-text-display" style="width: 100%; display: inline-block; white-space: pre-wrap; word-break: break-word; font-size: 17px; font-weight: bold; line-height: 1.6; text-align: left; margin: auto 0;">..</div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-buttons" style="width: 100%; max-width: 360px;">
       <button class="btn-cancel" style="flex: 1;" onclick="closeViewModal()">닫기</button>
       <button id="view-btn-hide" style="flex: 1; padding: 12px; font-size: 15px; font-weight: bold; border: 2px solid #bdc3c7; border-radius: 10px; cursor: pointer; background: white; color: #7f8c8d; transition: all 0.2s;" onclick="toggleHideViewed()">🫥 숨김</button>
       <button class="btn-submit" style="flex: 1;" onclick="editViewedCard()">편집</button>
@@ -621,22 +629,27 @@ function switchDeck(tag) {
     textarea.selectionEnd = end + open.length;
   }
 
-  function handleClozeClick(event, element) {
-    event.stopPropagation(); 
-    if (!element.classList.contains('revealed')) {
-      element.classList.add('revealed');
+function handleClozeClick(event, element) {
+if (element.closest('#view-modal')) {
+    return;
+  }
+  event.stopPropagation();
+  if (!element.classList.contains('revealed')) {
+    element.classList.add('revealed');
+    element.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
-element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      
+    const parentCard = element.closest('.card');
+    if (parentCard && parentCard.id === 'flashcard') {
       let currentCard = shuffledDeck.length > 0 ? shuffledDeck[currentIndex] : null;
       if (!currentCard) return;
-      
+
       const unrevealed = document.querySelectorAll('#front-display .inline-cloze:not(.revealed)');
       if (unrevealed.length === 0 && !currentCard.isCorrectInCurrentCycle) {
         document.getElementById('btn-correct').disabled = false;
       }
     }
   }
+}
 
   function formatText(text, isCloze = false) {
     if (!text) return { formatted: "", answers: [] };
@@ -1326,25 +1339,51 @@ unrevealed[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
       });
     }
   }
+function viewAnyCard(cardObj) {
+  currentViewTarget = cardObj;
+  const viewCard = document.getElementById('view-flashcard');
+  viewCard.classList.remove('flipped');
+  document.getElementById('view-hint-toast').classList.remove('show');
 
-  function viewAnyCard(cardObj) {
-    currentViewTarget = cardObj;
-    document.getElementById('view-name').innerHTML = formatText(cardObj.name).formatted;
-    document.getElementById('view-content').innerHTML = formatText(cardObj.content || "없음").formatted;
-    
-    const viewHint = document.getElementById('view-hint');
-    if (cardObj.hint && cardObj.hint.trim() !== "") {
-      viewHint.innerText = "💡 힌트: " + cardObj.hint; viewHint.style.display = 'block';
-    } else viewHint.style.display = 'none';
-    
-    const viewHideBtn = document.getElementById('view-btn-hide');
-    if (cardObj.isHidden) {
-      viewHideBtn.textContent = "👀 숨김 해제"; viewHideBtn.style.color = "#e74c3c"; viewHideBtn.style.borderColor = "#e74c3c"; viewHideBtn.style.backgroundColor = "#fdf2f1";
-    } else {
-      viewHideBtn.textContent = "🫥 숨김"; viewHideBtn.style.color = "#7f8c8d"; viewHideBtn.style.borderColor = "#bdc3c7"; viewHideBtn.style.backgroundColor = "white";
+  const parsedFront = formatText(cardObj.name, cardObj.type === 'cloze');
+  document.getElementById('view-front-display').innerHTML = parsedFront.formatted;
+const viewClozes = document.querySelectorAll('#view-front-display .inline-cloze');
+  viewClozes.forEach(cloze => cloze.classList.add('revealed'));
+
+  let backContent = "";
+  if (cardObj.type === 'cloze') {
+    backContent = parsedFront.answers.length > 0
+      ? parsedFront.answers.map((a, i) => `${i+1}. ${a}`).join('\n')
+      : "정답 없음";
+    if (cardObj.content) {
+      backContent += `\n\n<span style="color:#7f8c8d; font-size:14px;">--- 추가 내용 ---\n</span>` + formatText(cardObj.content).formatted;
     }
-    document.getElementById('view-modal').style.display = 'flex';
+  } else {
+    backContent = formatText(cardObj.content || "없음").formatted;
   }
+  document.getElementById('view-text-display').innerHTML = backContent;
+
+  const viewBtnHint = document.getElementById('view-btn-hint');
+  if (cardObj.hint && cardObj.hint.trim() !== "") {
+    viewBtnHint.style.display = 'block';
+  } else {
+    viewBtnHint.style.display = 'none';
+  }
+
+  const viewHideBtn = document.getElementById('view-btn-hide');
+  if (cardObj.isHidden) {
+    viewHideBtn.textContent = "👀 숨김 해제";
+    viewHideBtn.style.color = "#e74c3c";
+    viewHideBtn.style.borderColor = "#e74c3c";
+    viewHideBtn.style.backgroundColor = "#fdf2f1";
+  } else {
+    viewHideBtn.textContent = "🫥 숨김";
+    viewHideBtn.style.color = "#7f8c8d";
+    viewHideBtn.style.borderColor = "#bdc3c7";
+    viewHideBtn.style.backgroundColor = "white";
+  }
+  document.getElementById('view-modal').style.display = 'flex';
+}
 
   function toggleHideViewed() {
     if(!currentViewTarget) return;
@@ -1377,6 +1416,29 @@ unrevealed[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
   function closeViewModal() { document.getElementById('view-modal').style.display = 'none'; }
   function editViewedCard() { openFormModal('edit', currentViewTarget); }
+
+function flipViewCard() {
+  document.getElementById('view-hint-toast').classList.remove('show');
+  if (!currentViewTarget) return;
+
+  const viewCard = document.getElementById('view-flashcard');
+  
+  viewCard.classList.toggle('flipped');
+}
+
+function showViewHint(event) {
+  event.stopPropagation();
+  const hintToast = document.getElementById('view-hint-toast');
+  if(hintToast.classList.contains('show')) {
+    hintToast.classList.remove('show');
+    return;
+  }
+  if (currentViewTarget && currentViewTarget.hint) {
+    hintToast.innerText = "💡 " + currentViewTarget.hint;
+    hintToast.classList.add('show');
+    setTimeout(() => { hintToast.classList.remove('show'); }, 3000);
+  }
+}
 
   loadSavedData();
   if (shuffledDeck.length === 0) resetDeck();
