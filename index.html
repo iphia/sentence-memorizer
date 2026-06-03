@@ -163,13 +163,13 @@
 #front-display, #text-display {
   width: 100%;
   display: inline-block;
-  white-space: pre-wrap; 
+  white-space: pre-wrap;
   word-break: break-word;
-  font-size: 17px; 
+  font-size: 17px;
   font-weight: bold;
-  line-height: 1.6; 
-  text-align: left; 
-  margin: auto 0; 
+  line-height: 1.6;
+  text-align: left;
+  margin: auto 0;
 }
 
   .flashcard-table {
@@ -950,15 +950,18 @@ if (element.closest('#view-modal')) {
     saveData();
   }
 
-  function updateUI(keepFlipped = false) {
-    document.getElementById('hint-toast').classList.remove('show'); 
+function updateUI(keepFlipped = false) {
+  document.getElementById('hint-toast').classList.remove('show');
 
-    if (!keepFlipped) {
-      card.classList.remove('flipped');
-    }
-    
-    setTimeout(() => {
-      const btnHint = document.getElementById('btn-hint');
+  if (!keepFlipped) {
+    card.classList.remove('flipped');
+  }
+
+  setTimeout(() => {
+    document.getElementById('card-front').scrollTop = 0;
+    document.getElementById('card-back').scrollTop = 0;
+
+    const btnHint = document.getElementById('btn-hint');
 
       if (shuffledDeck.length === 0) {
         let totalCardsInDeck = activeCards.filter(c => c.tag === currentDeckTag).length + masteredCards.filter(c => c.tag === currentDeckTag).length;
