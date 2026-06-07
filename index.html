@@ -630,20 +630,24 @@ function switchDeck(tag) {
   }
 
 function handleClozeClick(event, element) {
-if (element.closest('#view-modal')) {
+  if (element.closest('#view-modal')) {
     return;
   }
   event.stopPropagation();
   if (!element.classList.contains('revealed')) {
     element.classList.add('revealed');
-    element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    
+    // 다음 빈칸 찾아서 스크롤 넘기기
+    const unrevealed = document.querySelectorAll('#front-display .inline-cloze:not(.revealed)');
+    if (unrevealed.length > 0) {
+      unrevealed[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
 
     const parentCard = element.closest('.card');
     if (parentCard && parentCard.id === 'flashcard') {
       let currentCard = shuffledDeck.length > 0 ? shuffledDeck[currentIndex] : null;
       if (!currentCard) return;
 
-      const unrevealed = document.querySelectorAll('#front-display .inline-cloze:not(.revealed)');
       if (unrevealed.length === 0 && !currentCard.isCorrectInCurrentCycle) {
         document.getElementById('btn-correct').disabled = false;
       }
@@ -774,7 +778,6 @@ if (element.closest('#view-modal')) {
         deckStates = data.deckStates || {};
         for (let tag in deckStates) {
           if (deckStates[tag] && deckStates[tag].deck) {
-            // 저장된 상태 안의 카드들을 실제 카드의 참조값으로 연결해 줘 (삭제된 카드는 자동으로 걸러짐)
             deckStates[tag].deck = deckStates[tag].deck.map(savedCard =>
               activeCards.find(f => f.name === savedCard.name) || masteredCards.find(f => f.name === savedCard.name)
             ).filter(Boolean);
@@ -1056,7 +1059,11 @@ function updateUI(keepFlipped = false) {
       if (unrevealed.length > 0) {
         unrevealed[0].classList.add('revealed'); 
 
-unrevealed[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+        // 지금 빈칸 열고 나서 그 다음 빈칸 찾아서 스크롤 넘기기
+        const nextUnrevealed = document.querySelectorAll('#front-display .inline-cloze:not(.revealed)');
+        if (nextUnrevealed.length > 0) {
+          nextUnrevealed[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
         
         if (unrevealed.length === 1 && !currentCard.isCorrectInCurrentCycle) {
           btnCorrect.disabled = false;
@@ -1279,7 +1286,13 @@ unrevealed[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
     if (currentMastered.length === 0) {
       listContainer.innerHTML = '<p style="text-align:center; color:#7f8c8d; margin-top:20px;">현재 덱에 마스터한 문장이 없어.</p>';
     } else {
-      const sortedMastered = [...currentMastered].sort((a, b) => a.name.localeCompare(b.name));
+      // 복습 남은 턴수로 내림차순 정렬되게 수정한 부분
+      const sortedMastered = [...currentMastered].sort((a, b) => {
+        const cyclesLeftA = 5 - (currentCycle - a.masteredAtCycle);
+        const cyclesLeftB = 5 - (currentCycle - b.masteredAtCycle);
+        return cyclesLeftB - cyclesLeftA;
+      });
+
       sortedMastered.forEach((f) => {
         const item = document.createElement('div');
         item.className = 'mastered-item'; item.onclick = () => viewAnyCard(f);
@@ -1443,6 +1456,7 @@ function showViewHint(event) {
   }
 }
 
+  // 초기화 실행 부분
   loadSavedData();
   if (shuffledDeck.length === 0) resetDeck();
   updateUI();
