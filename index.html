@@ -637,10 +637,12 @@ function handleClozeClick(event, element) {
   if (!element.classList.contains('revealed')) {
     element.classList.add('revealed');
     
-    // 다음 빈칸 찾아서 스크롤 넘기기
+    // 다음 빈칸 찾아서 스크롤 넘기기, 없으면 현재 누른 빈칸으로 스크롤
     const unrevealed = document.querySelectorAll('#front-display .inline-cloze:not(.revealed)');
     if (unrevealed.length > 0) {
       unrevealed[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+    } else {
+      element.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
 
     const parentCard = element.closest('.card');
@@ -1057,12 +1059,15 @@ function updateUI(keepFlipped = false) {
     if (isCloze && !card.classList.contains('flipped')) {
       const unrevealed = document.querySelectorAll('#front-display .inline-cloze:not(.revealed)');
       if (unrevealed.length > 0) {
-        unrevealed[0].classList.add('revealed'); 
+        let currentCloze = unrevealed[0];
+        currentCloze.classList.add('revealed'); 
 
-        // 지금 빈칸 열고 나서 그 다음 빈칸 찾아서 스크롤 넘기기
+        // 지금 빈칸 열고 나서 그 다음 빈칸 찾아서 스크롤 넘기기, 없으면 지금 연 빈칸 스크롤
         const nextUnrevealed = document.querySelectorAll('#front-display .inline-cloze:not(.revealed)');
         if (nextUnrevealed.length > 0) {
           nextUnrevealed[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } else {
+          currentCloze.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
         
         if (unrevealed.length === 1 && !currentCard.isCorrectInCurrentCycle) {
@@ -1286,7 +1291,6 @@ function updateUI(keepFlipped = false) {
     if (currentMastered.length === 0) {
       listContainer.innerHTML = '<p style="text-align:center; color:#7f8c8d; margin-top:20px;">현재 덱에 마스터한 문장이 없어.</p>';
     } else {
-      // 복습 남은 턴수로 내림차순 정렬되게 수정한 부분
       const sortedMastered = [...currentMastered].sort((a, b) => {
         const cyclesLeftA = 5 - (currentCycle - a.masteredAtCycle);
         const cyclesLeftB = 5 - (currentCycle - b.masteredAtCycle);
@@ -1455,7 +1459,6 @@ function showViewHint(event) {
     setTimeout(() => { hintToast.classList.remove('show'); }, 3000);
   }
 }
-
   // 초기화 실행 부분
   loadSavedData();
   if (shuffledDeck.length === 0) resetDeck();
