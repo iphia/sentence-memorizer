@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#f4f7f6"> <title>문장 암기장</title>
 
-<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📖</text></svg>">
+<script type="text/javascript" nonce="0c8da55f1b364569a6e7dc2cd20" src="//local.adguard.org?ts=1782794172284&amp;type=content-script&amp;dmn=chatgpt.com&amp;url=https%3A%2F%2Fchatgpt.com%2Fbackend-api%2Festuary%2Fcontent%3Fid%3Dfile_00000000fc1872069e3f6b1edc6b7332%26ts%3D495220%26p%3Dfs%26cid%3D1%26sig%3D7bb01ab05e86c8335bc12121bd7bb8bd7b2a14125fe900f3a1f215da72734761%26v%3D0&amp;app=com.apple.Safari.WebApp&amp;css=2&amp;js=1&amp;rel=1&amp;rji=1&amp;sbe=1"></script><script type="text/javascript" nonce="0c8da55f1b364569a6e7dc2cd20" src="//local.adguard.org?ts=1782794172284&amp;name=Absolute%20Enable%20Right%20Click%20%26%20Copy&amp;name=AdGuard%20Extra&amp;type=user-script"></script><link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📖</text></svg>">
 
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -120,6 +120,62 @@
     opacity: 0;
     transform: translateY(-50px) scale(0.9) !important;
     pointer-events: none;
+  }
+
+  #deck-start-banner {
+    position: absolute;
+    top: 118px;
+    left: 50%;
+    transform: translate(-50%, -12px) scale(0.96);
+    padding: 10px 18px;
+    border-radius: 999px;
+    background: rgba(142, 68, 173, 0.92);
+    color: white;
+    font-size: 14px;
+    font-weight: 800;
+    box-shadow: 0 8px 18px rgba(142, 68, 173, 0.28);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    z-index: 80;
+    white-space: nowrap;
+  }
+
+  #deck-start-banner.show {
+    visibility: visible;
+    animation: deckStartBanner 1.25s ease forwards;
+  }
+
+  .card-container.deck-start-pop {
+    animation: deckStartPop 0.7s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+  }
+
+  .card-container.deck-start-pop .card-face {
+    box-shadow: 0 16px 28px rgba(142, 68, 173, 0.18), 0 10px 20px rgba(0,0,0,0.1);
+  }
+
+  @keyframes deckStartBanner {
+    0% { opacity: 0; transform: translate(-50%, -12px) scale(0.96); }
+    18% { opacity: 1; transform: translate(-50%, 0) scale(1); }
+    72% { opacity: 1; transform: translate(-50%, 0) scale(1); }
+    100% { opacity: 0; transform: translate(-50%, -10px) scale(0.98); }
+  }
+
+  @keyframes deckStartPop {
+    0% { opacity: 0; transform: translateY(28px) scale(0.94) rotateZ(-1deg); }
+    55% { opacity: 1; transform: translateY(-8px) scale(1.025) rotateZ(0.6deg); }
+    100% { opacity: 1; transform: translateY(0) scale(1) rotateZ(0); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    #deck-start-banner.show,
+    .card-container.deck-start-pop {
+      animation: none;
+    }
+    #deck-start-banner.show {
+      opacity: 1;
+      visibility: visible;
+    }
   }
 
   .card {
@@ -371,6 +427,8 @@
   </div>
 </h1>
 
+<div id="deck-start-banner" aria-live="polite">✨ 새 덱 시작!</div>
+
 <div class="card-container" id="card-container">
   <div class="card" id="flashcard">
     <div class="card-face card-front" id="card-front">
@@ -512,6 +570,8 @@
   let currentViewTarget = null;
   let currentMode = 'add';
   let hintTimer = null; 
+  let pendingDeckStartAnimation = false;
+  let deckStartAnimationTimer = null;
 
   const cardContainer = document.getElementById('card-container');
   const card = document.getElementById('flashcard');
@@ -519,10 +579,37 @@
   const textDisplay = document.getElementById('text-display');
   const progressText = document.getElementById('progress-text');
   const progressBarFill = document.getElementById('progress-bar-fill');
+  const deckStartBanner = document.getElementById('deck-start-banner');
   
   const btnPrev = document.getElementById('btn-prev');
   const btnCorrect = document.getElementById('btn-correct');
   const btnNext = document.getElementById('btn-next');
+
+  function requestDeckStartAnimation() {
+    pendingDeckStartAnimation = true;
+  }
+
+  function playDeckStartAnimation() {
+    if (!deckStartBanner || shuffledDeck.length === 0) return;
+
+    const deckName = currentDeckTag === "" ? "기본" : currentDeckTag;
+    deckStartBanner.textContent = `✨ ${deckName} 덱 새로 시작!`;
+
+    deckStartBanner.classList.remove('show');
+    cardContainer.classList.remove('deck-start-pop');
+
+    void deckStartBanner.offsetWidth;
+    void cardContainer.offsetWidth;
+
+    deckStartBanner.classList.add('show');
+    cardContainer.classList.add('deck-start-pop');
+
+    clearTimeout(deckStartAnimationTimer);
+    deckStartAnimationTimer = setTimeout(() => {
+      deckStartBanner.classList.remove('show');
+      cardContainer.classList.remove('deck-start-pop');
+    }, 1300);
+  }
 
   function getAvailableDecks() {
     let allTags = [...new Set([...activeCards, ...masteredCards].map(c => c.tag || ""))];
@@ -952,6 +1039,7 @@ function handleClozeClick(event, element) {
 
     shuffledDeck = shuffle([...availableActive]);
     currentIndex = 0;
+    if (shuffledDeck.length > 0) requestDeckStartAnimation();
     saveData();
   }
 
@@ -985,6 +1073,7 @@ function updateUI(keepFlipped = false) {
         btnPrev.disabled = true; 
         btnCorrect.disabled = true; btnNext.disabled = true; btnHint.style.display = 'none';
         cardContainer.classList.remove('card-hidden-anim');
+        pendingDeckStartAnimation = false;
         return;
       }
 
@@ -1044,6 +1133,11 @@ function updateUI(keepFlipped = false) {
       progressBarFill.style.width = `${(currentNum / total) * 100}%`;
 
       btnPrev.disabled = (currentIndex === 0);
+
+      if (pendingDeckStartAnimation) {
+        pendingDeckStartAnimation = false;
+        playDeckStartAnimation();
+      }
 
     }, 100);
   }
